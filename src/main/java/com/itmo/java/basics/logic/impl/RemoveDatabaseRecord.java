@@ -1,11 +1,13 @@
 package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.logic.WritableDatabaseRecord;
+import com.itmo.java.basics.logic.io.DatabaseInputStream;
 
 public class RemoveDatabaseRecord implements WritableDatabaseRecord {
+
     @Override
     public byte[] getKey() {
-        return new byte[0];
+        return this.key;
     }
 
     @Override
@@ -15,7 +17,8 @@ public class RemoveDatabaseRecord implements WritableDatabaseRecord {
 
     @Override
     public long size() {
-        return 0;
+        long s = DatabaseInputStream.KEY_SIZE_FIELD + this.key.length + DatabaseInputStream.VALUE_SIZE_FIELD;
+        return s;
     }
 
     @Override
@@ -25,11 +28,18 @@ public class RemoveDatabaseRecord implements WritableDatabaseRecord {
 
     @Override
     public int getKeySize() {
-        return 0;
+        return this.key.length;
     }
 
     @Override
     public int getValueSize() {
-        return 0;
+        return -1;
     }
+
+    public RemoveDatabaseRecord(byte[] k) {
+        this.key = k;
+    }
+
+    protected byte[] key;
+
 }

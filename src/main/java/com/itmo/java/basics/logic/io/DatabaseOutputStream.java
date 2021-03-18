@@ -5,6 +5,7 @@ import com.itmo.java.basics.logic.WritableDatabaseRecord;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Записывает данные в БД
@@ -31,6 +32,24 @@ public class DatabaseOutputStream extends DataOutputStream {
      * @throws IOException если запись не удалась
      */
     public int write(WritableDatabaseRecord databaseRecord) throws IOException {
-        return 0;
+
+        int lengthOriginal = this.size();
+
+        this.write(ByteBuffer.allocate(DatabaseInputStream.KEY_SIZE_FIELD).putInt(databaseRecord.getKeySize()).array());
+        this.write(databaseRecord.getKey());
+        this.write(ByteBuffer.allocate(DatabaseInputStream.VALUE_SIZE_FIELD).putInt(databaseRecord.getValueSize()).array());
+        if (databaseRecord.isValuePresented()) {
+            this.write(databaseRecord.getValue());
+        }
+
+        int bytesWritten = this.size() - lengthOriginal;
+
+        if (bytesWritten != databaseRecord.size()) {
+            throw new IOException("Could not write to file.");
+        }
+
+        return (int) databaseRecord.size();
+
     }
+
 }
