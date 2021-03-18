@@ -26,6 +26,10 @@ public class SegmentImpl implements Segment {
 
     static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
+        if (segmentName.length() == 0) {
+            throw new DatabaseException("Empty segment name.");
+        }
+
         if (Files.isDirectory(tableRootPath)) {
             if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
                 Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
