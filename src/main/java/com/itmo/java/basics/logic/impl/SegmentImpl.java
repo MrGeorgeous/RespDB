@@ -60,6 +60,11 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
+        if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
+            return false;
+            //throw new DatabaseException("Too long entry.");
+        }
+
         WritableDatabaseRecord record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
         if (!isReadOnly() && (getOffset() <= MAX_SEGMENT_SIZE)) {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);

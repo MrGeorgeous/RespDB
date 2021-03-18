@@ -30,13 +30,21 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void createTableIfNotExists(String tableName) throws DatabaseException {
+        if (tableName.length() == 0) {
+            throw new DatabaseException("Empty table name.");
+        }
         if (!tables.containsKey(tableName)) {
             tables.put(tableName, TableImpl.create(tableName, this.root, new TableIndex()));
+        } else {
+            throw new DatabaseException("Table already exists.");
         }
     }
 
     @Override
     public void write(String tableName, String objectKey, byte[] objectValue) throws DatabaseException {
+        if (tableName.length() == 0) {
+            throw new DatabaseException("Empty table name.");
+        }
         if (tables.containsKey(tableName)) {
             tables.get(tableName).write(objectKey, objectValue);
         } else {
@@ -46,6 +54,9 @@ public class DatabaseImpl implements Database {
 
     @Override
     public Optional<byte[]> read(String tableName, String objectKey) throws DatabaseException {
+        if (tableName.length() == 0) {
+            throw new DatabaseException("Empty table name.");
+        }
         if (tables.containsKey(tableName)) {
             return tables.get(tableName).read(objectKey);
         } else {
@@ -55,6 +66,9 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void delete(String tableName, String objectKey) throws DatabaseException {
+        if (tableName.length() == 0) {
+            throw new DatabaseException("Empty table name.");
+        }
         if (tables.containsKey(tableName)) {
             tables.get(tableName).delete(objectKey);
         } else {

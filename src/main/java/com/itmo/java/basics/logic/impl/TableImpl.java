@@ -2,9 +2,11 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.Table;
 
+import javax.xml.crypto.Data;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -43,6 +45,9 @@ public class TableImpl implements Table {
 
     @Override
     public void write(String objectKey, byte[] objectValue) throws DatabaseException {
+
+        this.validate(objectKey);
+
         if (segments.size() == 0) {
             this.addNewSegment();
         }
@@ -56,6 +61,8 @@ public class TableImpl implements Table {
 
     @Override
     public Optional<byte[]> read(String objectKey) throws DatabaseException {
+
+        this.validate(objectKey);
 
         Optional<Segment> s = this.tableIndex.searchForKey(objectKey);
         if (s.isPresent()) {
@@ -72,6 +79,9 @@ public class TableImpl implements Table {
 
     @Override
     public void delete(String objectKey) throws DatabaseException {
+
+        this.validate(objectKey);
+
         if (segments.size() == 0) {
             this.addNewSegment();
         }
@@ -121,6 +131,15 @@ public class TableImpl implements Table {
             throw new DatabaseException("IO fault.");
         }
         return false;
+    }
+
+    private void validate(String objectKey) throws DatabaseException {
+        if (objectKey.length() == 0) {
+            throw new DatabaseException("Empty object key.");
+        }
+        if (objectKey.length() > 1000) {
+            throw new DatabaseException("Too long object key.");
+        }
     }
 
 }
