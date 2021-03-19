@@ -38,6 +38,7 @@ public class DatabaseImpl implements Database {
         }
         if (!tables.containsKey(tableName)) {
             tables.put(tableName, TableImpl.create(tableName, this.root, new TableIndex()));
+            //System.out.println(tables.get(tableName).getName());
         } else {
             throw new DatabaseException("Table already exists.");
         }
