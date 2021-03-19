@@ -36,7 +36,7 @@ public class SegmentImpl implements Segment {
                 if (!Files.exists(segmentPath)) {
                     try {
                         File segmentFile = new File(segmentPath.toString());
-                        System.out.println(segmentPath.toString());
+                        //System.out.println(segmentPath.toString());
                         if (segmentFile.createNewFile()) {
                             return new SegmentImpl(segmentName, segmentPath);
                         }
@@ -101,7 +101,9 @@ public class SegmentImpl implements Segment {
         }
 
         if ((record != null) && (record.isValuePresented())) {
-            return Optional.of(record.getValue());
+            if (record.getValue().length != 0) {
+                return Optional.of(record.getValue());
+            }
         }
 
         return Optional.empty();
@@ -132,15 +134,17 @@ public class SegmentImpl implements Segment {
 
     }
 
-    private SegmentImpl(String segmentName, Path segmentPath) {
-        this.segmentName = segmentName;
-        this.segmentPath = segmentPath;
+    private SegmentImpl(String _segmentName, Path _segmentPath) {
+        this.segmentName = _segmentName;
+        this.segmentPath = _segmentPath;
         this.segmentIndex = new SegmentIndex();
     }
 
     private String segmentName;
     private Path segmentPath;
     private SegmentIndex segmentIndex;
+
+
 
     private long getOffset() {
         File f = new File(this.segmentPath.toString());
