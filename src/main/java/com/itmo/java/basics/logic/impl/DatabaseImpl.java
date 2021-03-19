@@ -95,9 +95,9 @@ public class DatabaseImpl implements Database {
 
     private void validate(String tableName, String objectKey, byte[] objectValue) throws DatabaseException {
         this.validate(tableName, objectKey);
-        if ((objectValue == null) || (objectValue.length == 0)) {
-            throw new DatabaseException("Null object value.");
-        }
+        //if ((objectValue == null) || (objectValue.length == 0)) {
+        //    throw new DatabaseException("Null object value.");
+        //}
     }
 
 

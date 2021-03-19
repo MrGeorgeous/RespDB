@@ -152,9 +152,9 @@ public class TableImpl implements Table {
         if (objectKey.length() == 0) {
             throw new DatabaseException("Empty object key.");
         }
-        if (objectKey.length() > 1000) {
-            throw new DatabaseException("Too long object key.");
-        }
+//        if (objectKey.length() > 1000) {
+//            throw new DatabaseException("Too long object key.");
+//        }
     }
 
 }

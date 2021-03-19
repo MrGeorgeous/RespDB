@@ -65,14 +65,17 @@ public class SegmentImpl implements Segment {
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
         if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
-            return false;
+            return true;
+            //return false;
         }
 
-        if (objectValue.length == 0) {
-            return false;
+        WritableDatabaseRecord record;
+        if (objectValue.length != 0) {
+            record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
+        } else {
+            record = new RemoveDatabaseRecord(objectKey.getBytes());
         }
 
-        WritableDatabaseRecord record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
         if (!isReadOnly()) {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
@@ -103,10 +106,8 @@ public class SegmentImpl implements Segment {
             }
         }
 
-        if ((record != null) && (record.isValuePresented())) {
-            if (record.getValue().length != 0) {
-                return Optional.of(record.getValue());
-            }
+        if ((record != null) && record.isValuePresented() && (record.getValue().length != 0)) {
+            return Optional.of(record.getValue());
         }
 
         return Optional.empty();
