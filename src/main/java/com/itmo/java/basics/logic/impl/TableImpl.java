@@ -28,7 +28,8 @@ public class TableImpl implements Table {
 
         if (Files.isDirectory(pathToDatabaseRoot)) {
             if (Files.isReadable(pathToDatabaseRoot) && Files.isWritable(pathToDatabaseRoot)) {
-                Path tablePath = Paths.get(pathToDatabaseRoot.toString(), tableName.replaceAll("\\W+", ""), "\\");
+                //Path tablePath = Paths.get(pathToDatabaseRoot.toString(), tableName.replaceAll("\\W+", ""), "\\");
+                Path tablePath = pathToDatabaseRoot.resolve(tableName);
                 File f = new File(tablePath.toString());
                 if (!Files.exists(tablePath)) {
                     if (!f.mkdir()) {

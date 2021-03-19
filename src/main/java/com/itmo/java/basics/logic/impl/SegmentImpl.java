@@ -32,7 +32,7 @@ public class SegmentImpl implements Segment {
 
         if (Files.isDirectory(tableRootPath)) {
             if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
-                Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
+                Path segmentPath = tableRootPath.resolve(segmentName);
                 if (!Files.exists(segmentPath)) {
                     try {
                         File segmentFile = new File(segmentPath.toString());
