@@ -17,7 +17,7 @@ import java.util.Optional;
 public class DatabaseImpl implements Database {
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
-        if (dbName.length() == 0) {
+        if ((dbName == null) || (dbName.length() == 0)) {
             throw new DatabaseException("Empty db name.");
         }
         if (Files.exists(databaseRoot) && Files.isDirectory(databaseRoot)) {
@@ -33,12 +33,9 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void createTableIfNotExists(String tableName) throws DatabaseException {
-        if (tableName.length() == 0) {
-            throw new DatabaseException("Empty table name.");
-        }
+        this.validate(tableName);
         if (!tables.containsKey(tableName)) {
             tables.put(tableName, TableImpl.create(tableName, this.root, new TableIndex()));
-            //System.out.println(tables.get(tableName).getName());
         } else {
             throw new DatabaseException("Table already exists.");
         }
@@ -46,9 +43,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void write(String tableName, String objectKey, byte[] objectValue) throws DatabaseException {
-        if (tableName.length() == 0) {
-            throw new DatabaseException("Empty table name.");
-        }
+        this.validate(tableName, objectKey, objectValue);
         if (tables.containsKey(tableName)) {
             tables.get(tableName).write(objectKey, objectValue);
         } else {
@@ -58,9 +53,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public Optional<byte[]> read(String tableName, String objectKey) throws DatabaseException {
-        if (tableName.length() == 0) {
-            throw new DatabaseException("Empty table name.");
-        }
+        this.validate(tableName, objectKey);
         if (tables.containsKey(tableName)) {
             return tables.get(tableName).read(objectKey);
         } else {
@@ -70,9 +63,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void delete(String tableName, String objectKey) throws DatabaseException {
-        if (tableName.length() == 0) {
-            throw new DatabaseException("Empty table name.");
-        }
+        this.validate(tableName, objectKey);
         if (tables.containsKey(tableName)) {
             tables.get(tableName).delete(objectKey);
         } else {
@@ -89,5 +80,26 @@ public class DatabaseImpl implements Database {
     private String name;
     private Path root;
     private Map<String, Table> tables;
+
+    private void validate(String tableName) throws DatabaseException {
+        if ((tableName == null) || (tableName.length() == 0)) {
+            throw new DatabaseException("Empty table name.");
+        }
+    }
+    private void validate(String tableName, String objectKey) throws DatabaseException {
+       this.validate(tableName);
+        if ((objectKey == null) || (objectKey.length() == 0)) {
+            throw new DatabaseException("Empty object key.");
+        }
+    }
+
+    private void validate(String tableName, String objectKey, byte[] objectValue) throws DatabaseException {
+        this.validate(tableName, objectKey);
+        if ((objectValue == null) || (objectValue.length == 0)) {
+            throw new DatabaseException("Null object value.");
+        }
+    }
+
+
 
 }

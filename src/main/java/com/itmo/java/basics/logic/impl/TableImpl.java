@@ -64,6 +64,7 @@ public class TableImpl implements Table {
                 throw new DatabaseException("Impossible to write entry.");
             }
         }
+
     }
 
     @Override
@@ -145,6 +146,9 @@ public class TableImpl implements Table {
     }
 
     private void validate(String objectKey) throws DatabaseException {
+        if (objectKey == null) {
+            throw new DatabaseException("Empty object key.");
+        }
         if (objectKey.length() == 0) {
             throw new DatabaseException("Empty object key.");
         }

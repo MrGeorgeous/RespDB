@@ -66,11 +66,14 @@ public class SegmentImpl implements Segment {
 
         if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
             return false;
-            //throw new DatabaseException("Too long entry.");
+        }
+
+        if (objectValue.length == 0) {
+            return false;
         }
 
         WritableDatabaseRecord record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
-        if (!isReadOnly() && (getOffset() <= MAX_SEGMENT_SIZE)) {
+        if (!isReadOnly()) {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
@@ -112,15 +115,15 @@ public class SegmentImpl implements Segment {
 
     @Override
     public boolean isReadOnly() {
-        File segmentFile = new File(this.segmentPath.toString());
-        return segmentFile.length() > MAX_SEGMENT_SIZE;
+        return (getOffset() > MAX_SEGMENT_SIZE);
     }
+
 
     @Override
     public boolean delete(String objectKey) throws IOException {
 
         WritableDatabaseRecord record = new RemoveDatabaseRecord(objectKey.getBytes());
-        if (!isReadOnly() && (getOffset() + record.size() <= MAX_SEGMENT_SIZE)) {
+        if (!isReadOnly()) {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
@@ -143,8 +146,6 @@ public class SegmentImpl implements Segment {
     private String segmentName;
     private Path segmentPath;
     private SegmentIndex segmentIndex;
-
-
 
     private long getOffset() {
         File f = new File(this.segmentPath.toString());
