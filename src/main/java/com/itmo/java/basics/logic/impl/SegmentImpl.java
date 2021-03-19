@@ -31,7 +31,7 @@ public class SegmentImpl implements Segment {
         }
 
         if (Files.isDirectory(tableRootPath)) {
-            if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
+            //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
                 Path segmentPath = tableRootPath.resolve(segmentName);
                 if (!Files.exists(segmentPath)) {
                     try {
@@ -45,7 +45,7 @@ public class SegmentImpl implements Segment {
                     }
                     throw new DatabaseException("Segment file can not be created.");
                 }
-            }
+            //}
         }
 
         throw new DatabaseException("Path is not valid.");
@@ -115,7 +115,7 @@ public class SegmentImpl implements Segment {
 
     @Override
     public boolean isReadOnly() {
-        return (getOffset() > MAX_SEGMENT_SIZE);
+        return (getOffset() >= MAX_SEGMENT_SIZE);
     }
 
 
