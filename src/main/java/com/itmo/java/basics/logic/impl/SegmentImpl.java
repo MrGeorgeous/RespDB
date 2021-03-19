@@ -64,13 +64,12 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
-        if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
-            return true;
-            //return false;
-        }
-
         WritableDatabaseRecord record;
-        if (objectValue.length != 0) {
+        if ((objectValue != null) && (objectValue.length != 0)) {
+            if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
+                return true;
+                //return false;
+            }
             record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
         } else {
             record = new RemoveDatabaseRecord(objectKey.getBytes());
