@@ -59,6 +59,7 @@ public class TableImpl implements Table {
         if (!tryWrite(objectKey, objectValue)) {
             this.addNewSegment();
             if (!tryWrite(objectKey, objectValue)) {
+                this.rollbackNewSegment();
                 throw new DatabaseException("Impossible to write entry.");
             }
         }
@@ -112,6 +113,10 @@ public class TableImpl implements Table {
 
     protected void addNewSegment() throws DatabaseException {
         segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
+    }
+
+    protected void rollbackNewSegment() throws DatabaseException {
+        segments.remove(segments.size() - 1);
     }
 
     protected boolean tryWrite(String objectKey, byte[] objectValue) throws DatabaseException {
