@@ -39,10 +39,10 @@ public class SegmentImpl implements Segment {
                 File segmentFile = new File(segmentPath.toString());
                 try {
                     if (!segmentFile.createNewFile()) {
-                        throw new DatabaseException("Segment file can not be created.");
+                        //throw new DatabaseException("Segment file can not be created.");
                     }
                 } catch (Exception e) {
-                    throw new DatabaseException("Segment file can not be created.");
+                    //throw new DatabaseException("Segment file can not be created.");
                 }
             }
             return new SegmentImpl(segmentName, segmentPath);
