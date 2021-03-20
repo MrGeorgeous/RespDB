@@ -53,19 +53,17 @@ public class TableImpl implements Table {
 
         this.validate(objectKey);
 
-        if (segments.size() == 0) {
-            this.addNewSegment();
-        }
-        if (segments.get(segments.size() - 1).isReadOnly()) {
+        if ((segments.size() == 0) || segments.get(segments.size() - 1).isReadOnly()) {
             this.addNewSegment();
         }
 
         if (!tryWrite(objectKey, objectValue)) {
-            this.addNewSegment();
-            if (!tryWrite(objectKey, objectValue)) {
-                this.rollbackNewSegment();
-                throw new DatabaseException("Impossible to write entry.");
-            }
+            throw new DatabaseException("Impossible to write entry.");
+//            this.addNewSegment();
+//            if (!tryWrite(objectKey, objectValue)) {
+//                this.rollbackNewSegment();
+//                throw new DatabaseException("Impossible to write entry.");
+//            }
         }
 
     }
@@ -92,16 +90,17 @@ public class TableImpl implements Table {
     public void delete(String objectKey) throws DatabaseException {
 
         this.validate(objectKey);
+        this.write(objectKey, null);
 
-        if (segments.size() == 0) {
-            this.addNewSegment();
-        }
-        if (!tryDelete(objectKey)) {
-            this.addNewSegment();
-            if (!tryDelete(objectKey)) {
-                throw new DatabaseException("Impossible to delete entry.");
-            }
-        }
+//        if (segments.size() == 0) {
+//            this.addNewSegment();
+//        }
+//        if (!tryDelete(objectKey)) {
+//            this.addNewSegment();
+//            if (!tryDelete(objectKey)) {
+//                throw new DatabaseException("Impossible to delete entry.");
+//            }
+//        }
 
     }
 
@@ -137,18 +136,18 @@ public class TableImpl implements Table {
         return false;
     }
 
-    protected boolean tryDelete(String objectKey) throws DatabaseException {
-        return this.tryWrite(objectKey, null);
-//        try {
-//            if (segments.get(segments.size() - 1).delete(objectKey)) {
-//                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-//                return true;
-//            }
-//        } catch (IOException e) {
-//            throw new DatabaseException("IO fault.");
-//        }
-//        return false;
-    }
+//    protected boolean tryDelete(String objectKey) throws DatabaseException {
+//        return this.tryWrite(objectKey, null);
+////        try {
+////            if (segments.get(segments.size() - 1).delete(objectKey)) {
+////                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+////                return true;
+////            }
+////        } catch (IOException e) {
+////            throw new DatabaseException("IO fault.");
+////        }
+////        return false;
+//    }
 
     private void validate(String objectKey) throws DatabaseException {
         if (objectKey == null) {
