@@ -26,17 +26,17 @@ public class SegmentImpl implements Segment {
 
     public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
-        if (segmentName.length() == 0) {
-            throw new DatabaseException("Empty segment name.");
-        }
+//        if (segmentName.length() == 0) {
+//            throw new DatabaseException("Empty segment name.");
+//        }
 
-        if (Files.isDirectory(tableRootPath)) {
+        //if (Files.isDirectory(tableRootPath)) {
             //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
             //Path segmentPath = tableRootPath.resolve(segmentName);
-            Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
+            //Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
+            File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
             //System.out.println(segmentPath.toAbsolutePath());
-            if (!Files.exists(segmentPath)) {
-                File segmentFile = new File(segmentPath.toString());
+            if (!segmentFile.exists()) {
                 try {
                     if (!segmentFile.createNewFile()) {
                         //throw new DatabaseException("Segment file can not be created.");
@@ -45,11 +45,11 @@ public class SegmentImpl implements Segment {
                     //throw new DatabaseException("Segment file can not be created.");
                 }
             }
-            return new SegmentImpl(segmentName, segmentPath);
+            return new SegmentImpl(segmentName, segmentFile.toPath());
             //}
-        }
+        //}
 
-        throw new DatabaseException("Path is not valid.");
+        //throw new DatabaseException("Path is not valid.");
 
     }
 
