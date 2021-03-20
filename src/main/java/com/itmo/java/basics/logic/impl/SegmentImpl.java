@@ -34,18 +34,23 @@ public class SegmentImpl implements Segment {
             //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
             //Path segmentPath = tableRootPath.resolve(segmentName);
             //Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
+        //tableRootPath.
             File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
+            segmentFile.getParentFile().mkdirs();
             //System.out.println(segmentPath.toAbsolutePath());
+
             if (!segmentFile.exists()) {
                 try {
-                    if (!segmentFile.createNewFile()) {
+                    Files.createFile(segmentFile.toPath());
+                    new FileOutputStream(segmentFile).close();
+                    //if (!segmentFile.createNewFile()) {
                         //throw new DatabaseException("Segment file can not be created.");
-                    }
+                    //}
                 } catch (Exception e) {
                     //throw new DatabaseException("Segment file can not be created.");
                 }
             }
-            return new SegmentImpl(segmentName, segmentFile.toPath());
+            return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath());
             //}
         //}
 
