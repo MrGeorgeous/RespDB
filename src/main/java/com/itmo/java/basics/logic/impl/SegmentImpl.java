@@ -74,13 +74,13 @@ public class SegmentImpl implements Segment {
 
         if (!isReadOnly()) {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
-            DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
+            DatabaseOutputStream dbStream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
-            stream.write(record);
-            //if (stream.write(record) == record.size()) {
-                this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-                return true;
-            //}
+            dbStream.write(record);
+            this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
+            ioStream.close();
+            dbStream.close();
+            return true;
         }
 
         return false;
@@ -102,6 +102,9 @@ public class SegmentImpl implements Segment {
                 record = r.get();
             }
         }
+
+        ioStream.close();
+        dbStream.close();
 
         if ((record != null) && record.isValuePresented() /* && (record.getValue().length != 0) */) {
             return Optional.of(record.getValue());

@@ -57,11 +57,15 @@ public class TableImpl implements Table {
             if (segments.size() == 0) {
                 this.addNewSegment();
             }
-            if (segments.get(segments.size() - 1).isReadOnly()) {
-                this.addNewSegment();
-            }
             if (segments.get(segments.size() - 1).write(objectKey, objectValue)) {
                 tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+            } else {
+                this.addNewSegment();
+                if (segments.get(segments.size() - 1).write(objectKey, objectValue)) {
+                    tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+                } else {
+                    throw new DatabaseException("IO fault.");
+                }
             }
         } catch (IOException e) {
             throw new DatabaseException("IO fault.");
