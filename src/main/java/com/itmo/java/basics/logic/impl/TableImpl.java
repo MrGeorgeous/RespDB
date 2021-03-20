@@ -61,11 +61,8 @@ public class TableImpl implements Table {
                 tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
             } else {
                 this.addNewSegment();
-                if (segments.get(segments.size() - 1).write(objectKey, objectValue)) {
-                    tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-                } else {
-                    throw new DatabaseException("IO fault.");
-                }
+                segments.get(segments.size() - 1).write(objectKey, objectValue);
+                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
             }
         } catch (IOException e) {
             throw new DatabaseException("IO fault.");

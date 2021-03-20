@@ -72,9 +72,10 @@ public class SegmentImpl implements Segment {
             record = new RemoveDatabaseRecord(objectKey.getBytes());
         }
 
-        if (!isReadOnly()) {
-            OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
-            DatabaseOutputStream dbStream = new DatabaseOutputStream(ioStream);
+        OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
+        DatabaseOutputStream dbStream = new DatabaseOutputStream(ioStream);
+
+        if (/*!isReadOnly()*/ dbStream.size() >= MAX_SEGMENT_SIZE ) {
             long offset = this.getOffset();
             dbStream.write(record);
             this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
@@ -82,6 +83,9 @@ public class SegmentImpl implements Segment {
             dbStream.close();
             return true;
         }
+
+        ioStream.close();
+        dbStream.close();
 
         return false;
 
