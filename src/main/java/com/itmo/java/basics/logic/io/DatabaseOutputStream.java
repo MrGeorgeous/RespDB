@@ -44,9 +44,9 @@ public class DatabaseOutputStream extends DataOutputStream {
 
         int bytesWritten = this.size() - lengthOriginal;
 
-        if (bytesWritten != databaseRecord.size()) {
-            throw new IOException("Could not write to file.");
-        }
+//        if (bytesWritten != databaseRecord.size()) {
+//            throw new IOException("Could not write to file.");
+//        }
 
         return (int) databaseRecord.size();
 

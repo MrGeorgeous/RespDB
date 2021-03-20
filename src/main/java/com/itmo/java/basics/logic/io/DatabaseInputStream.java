@@ -56,7 +56,7 @@ public class DatabaseInputStream extends DataInputStream {
         int valueSize = ByteBuffer.wrap(buffer.get()).getInt();
 
         // read value
-        if ((valueSize != 0) && (valueSize != REMOVED_OBJECT_SIZE)) {
+        if (/*(valueSize != 0) &&*/ (valueSize != REMOVED_OBJECT_SIZE)) {
             Optional<byte[]> value = this.tryReadNBytes(valueSize);
             if (value.isEmpty()) {
                 return Optional.empty();

@@ -24,13 +24,13 @@ public class SegmentImpl implements Segment {
 
     private static final int MAX_SEGMENT_SIZE = 100_000; // in bytes
 
-    static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
+    public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
         if (segmentName.length() == 0) {
             throw new DatabaseException("Empty segment name.");
         }
 
-        //if (Files.isDirectory(tableRootPath)) {
+        if (Files.isDirectory(tableRootPath)) {
             //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
             //Path segmentPath = tableRootPath.resolve(segmentName);
             Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
@@ -47,13 +47,13 @@ public class SegmentImpl implements Segment {
             }
             return new SegmentImpl(segmentName, segmentPath);
             //}
-        //}
+        }
 
-        //throw new DatabaseException("Path is not valid.");
+        throw new DatabaseException("Path is not valid.");
 
     }
 
-    static String createSegmentName(String tableName) {
+    public static String createSegmentName(String tableName) {
         return tableName + "_" + System.currentTimeMillis();
     }
 
@@ -67,10 +67,10 @@ public class SegmentImpl implements Segment {
 
         WritableDatabaseRecord record;
         if ((objectValue != null) /*&& (objectValue.length != 0)*/) {
-            if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
-                return true;
-                //return false;
-            }
+//            if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
+//                return true;
+//                //return false;
+//            }
             record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
         } else {
             record = new RemoveDatabaseRecord(objectKey.getBytes());
@@ -107,7 +107,7 @@ public class SegmentImpl implements Segment {
             }
         }
 
-        if ((record != null) && record.isValuePresented() && (record.getValue().length != 0)) {
+        if ((record != null) && record.isValuePresented() /* && (record.getValue().length != 0) */) {
             return Optional.of(record.getValue());
         }
 
