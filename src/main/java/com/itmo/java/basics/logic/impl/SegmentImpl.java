@@ -34,7 +34,7 @@ public class SegmentImpl implements Segment {
             //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
             //Path segmentPath = tableRootPath.resolve(segmentName);
             Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
-            System.out.println(segmentPath.toAbsolutePath());
+            //System.out.println(segmentPath.toAbsolutePath());
             if (!Files.exists(segmentPath)) {
                 File segmentFile = new File(segmentPath.toString());
                 try {
