@@ -76,10 +76,11 @@ public class SegmentImpl implements Segment {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
-            if (stream.write(record) == record.size()) {
+            stream.write(record);
+            //if (stream.write(record) == record.size()) {
                 this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
                 return true;
-            }
+            //}
         }
 
         return false;

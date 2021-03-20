@@ -64,7 +64,7 @@ public class TableImpl implements Table {
                 tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
             }
         } catch (IOException e) {
-            //throw new DatabaseException("IO fault.");
+            throw new DatabaseException("IO fault.");
         }
 
 
