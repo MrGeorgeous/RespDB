@@ -78,6 +78,7 @@ public class SegmentImpl implements Segment {
         long offset = this.getOffset();
         if (/*!isReadOnly()*/ offset < MAX_SEGMENT_SIZE ) {
             dbStream.write(record);
+            this.currentOffset += record.size();
             this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
             ioStream.close();
             dbStream.close();
@@ -123,7 +124,6 @@ public class SegmentImpl implements Segment {
         return (getOffset() >= MAX_SEGMENT_SIZE);
     }
 
-
     @Override
     public boolean delete(String objectKey) throws IOException {
 
@@ -146,6 +146,7 @@ public class SegmentImpl implements Segment {
     private String segmentName;
     private Path segmentPath;
     private SegmentIndex segmentIndex;
+    private long currentOffset = 0;
 
     private SegmentImpl(String _segmentName, Path _segmentPath) {
         this.segmentName = _segmentName;
@@ -154,8 +155,9 @@ public class SegmentImpl implements Segment {
     }
 
     private long getOffset() {
-        File f = new File(this.segmentPath.toString());
-        return f.length();
+        return this.currentOffset;
+        //File f = new File(this.segmentPath.toString());
+        //return f.length();
     }
 
 }

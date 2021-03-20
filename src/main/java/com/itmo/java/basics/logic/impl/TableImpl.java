@@ -53,25 +53,20 @@ public class TableImpl implements Table {
 
         this.validate(objectKey);
 
-
             if (segments.size() == 0) {
                 this.addNewSegment();
             }
+
             try {
-                if (segments.get(segments.size() - 1).write(objectKey, objectValue)) {
-                    tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-                } else {
+                if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
                     this.addNewSegment();
-                    try {
-                        segments.get(segments.size() - 1).write(objectKey, objectValue);
-                        tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-                    } catch (IOException e) {
-                        //throw new DatabaseException("IO fault.");
-                    }
+                    segments.get(segments.size() - 1).write(objectKey, objectValue);
                 }
             } catch (IOException e) {
                 //throw new DatabaseException("IO fault.");
             }
+
+        tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
 
 
         //if (!tryWrite(objectKey, objectValue)) {
