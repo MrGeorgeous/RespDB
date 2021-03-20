@@ -30,9 +30,11 @@ public class SegmentImpl implements Segment {
             throw new DatabaseException("Empty segment name.");
         }
 
-        if (Files.isDirectory(tableRootPath)) {
+        //if (Files.isDirectory(tableRootPath)) {
             //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
-            Path segmentPath = tableRootPath.resolve(segmentName);
+            //Path segmentPath = tableRootPath.resolve(segmentName);
+            Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
+            System.out.println(segmentPath.toAbsolutePath());
             if (!Files.exists(segmentPath)) {
                 File segmentFile = new File(segmentPath.toString());
                 try {
@@ -45,9 +47,9 @@ public class SegmentImpl implements Segment {
             }
             return new SegmentImpl(segmentName, segmentPath);
             //}
-        }
+        //}
 
-        throw new DatabaseException("Path is not valid.");
+        //throw new DatabaseException("Path is not valid.");
 
     }
 
@@ -78,10 +80,11 @@ public class SegmentImpl implements Segment {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
-            if (stream.write(record) == record.size()) {
+            stream.write(record);
+            //if (stream.write(record) == record.size()) {
                 this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
                 return true;
-            }
+            //}
         }
 
         return false;
@@ -126,10 +129,11 @@ public class SegmentImpl implements Segment {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
-            if (stream.write(record) == record.size()) {
+            stream.write(record);
+            //if (stream.write(record) == record.size()) {
                 this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
                 return true;
-            }
+            //}
         }
 
         return false;
