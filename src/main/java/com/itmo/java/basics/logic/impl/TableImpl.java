@@ -28,7 +28,6 @@ public class TableImpl implements Table {
 
         if (Files.isDirectory(pathToDatabaseRoot)) {
             if (Files.isReadable(pathToDatabaseRoot) && Files.isWritable(pathToDatabaseRoot)) {
-                //Path tablePath = Paths.get(pathToDatabaseRoot.toString(), tableName.replaceAll("\\W+", ""), "\\");
                 Path tablePath = pathToDatabaseRoot.resolve(tableName);
                 File f = new File(tablePath.toString());
                 if (!Files.exists(tablePath)) {
@@ -103,7 +102,13 @@ public class TableImpl implements Table {
                 throw new DatabaseException("Impossible to delete entry.");
             }
         }
+
     }
+
+    protected String tableName;
+    protected Path tablePath;
+    protected TableIndex tableIndex;
+    protected ArrayList<Segment> segments;
 
     private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
         this.tableName = tableName;
@@ -111,11 +116,6 @@ public class TableImpl implements Table {
         this.tableIndex = tableIndex;
         this.segments = new ArrayList<>();
     }
-
-    protected String tableName;
-    protected Path tablePath;
-    protected TableIndex tableIndex;
-    protected ArrayList<Segment> segments;
 
     protected void addNewSegment() throws DatabaseException {
         segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
@@ -138,15 +138,16 @@ public class TableImpl implements Table {
     }
 
     protected boolean tryDelete(String objectKey) throws DatabaseException {
-        try {
-            if (segments.get(segments.size() - 1).delete(objectKey)) {
-                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-                return true;
-            }
-        } catch (IOException e) {
-            throw new DatabaseException("IO fault.");
-        }
-        return false;
+        return this.tryWrite(objectKey, null);
+//        try {
+//            if (segments.get(segments.size() - 1).delete(objectKey)) {
+//                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+//                return true;
+//            }
+//        } catch (IOException e) {
+//            throw new DatabaseException("IO fault.");
+//        }
+//        return false;
     }
 
     private void validate(String objectKey) throws DatabaseException {

@@ -31,7 +31,7 @@ public class SegmentImpl implements Segment {
         }
 
         if (Files.isDirectory(tableRootPath)) {
-            if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
+            //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
 
                 File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
                 segmentFile.getParentFile().mkdirs();
@@ -47,7 +47,7 @@ public class SegmentImpl implements Segment {
 
                 return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath());
 
-            }
+            //}
         }
 
         throw new DatabaseException("Path is not valid.");
