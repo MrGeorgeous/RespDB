@@ -60,15 +60,13 @@ public class TableImpl implements Table {
         if (segments.get(segments.size() - 1).isReadOnly()) {
             this.addNewSegment();
         }
+
         if (!tryWrite(objectKey, objectValue)) {
-
-            throw new DatabaseException("Impossible to write entry.");
-
-//            this.addNewSegment();
-//            if (!tryWrite(objectKey, objectValue)) {
-//                this.rollbackNewSegment();
-//                throw new DatabaseException("Impossible to write entry.");
-//            }
+            this.addNewSegment();
+            if (!tryWrite(objectKey, objectValue)) {
+                this.rollbackNewSegment();
+                throw new DatabaseException("Impossible to write entry.");
+            }
         }
 
     }

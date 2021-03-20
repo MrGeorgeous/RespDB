@@ -26,35 +26,31 @@ public class SegmentImpl implements Segment {
 
     public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
-//        if (segmentName.length() == 0) {
-//            throw new DatabaseException("Empty segment name.");
-//        }
+        if (segmentName.length() == 0) {
+            throw new DatabaseException("Empty segment name.");
+        }
 
-        //if (Files.isDirectory(tableRootPath)) {
-            //if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
-            //Path segmentPath = tableRootPath.resolve(segmentName);
-            //Path segmentPath = Paths.get(tableRootPath.toString(), segmentName);
-        //tableRootPath.
-            File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
-            segmentFile.getParentFile().mkdirs();
-            //System.out.println(segmentPath.toAbsolutePath());
+        if (Files.isDirectory(tableRootPath)) {
+            if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
 
-            if (!segmentFile.exists()) {
-                try {
-                    Files.createFile(segmentFile.toPath());
-                    new FileOutputStream(segmentFile).close();
-                    //if (!segmentFile.createNewFile()) {
-                        //throw new DatabaseException("Segment file can not be created.");
-                    //}
-                } catch (Exception e) {
-                    //throw new DatabaseException("Segment file can not be created.");
+                File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
+                segmentFile.getParentFile().mkdirs();
+
+                if (!segmentFile.exists()) {
+                    try {
+                        Files.createFile(segmentFile.toPath());
+                        new FileOutputStream(segmentFile).close();
+                    } catch (Exception e) {
+                        throw new DatabaseException("Segment file can not be created.");
+                    }
                 }
-            }
-            return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath());
-            //}
-        //}
 
-        //throw new DatabaseException("Path is not valid.");
+                return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath());
+
+            }
+        }
+
+        throw new DatabaseException("Path is not valid.");
 
     }
 
@@ -71,11 +67,7 @@ public class SegmentImpl implements Segment {
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
         WritableDatabaseRecord record;
-        if ((objectValue != null) /*&& (objectValue.length != 0)*/) {
-//            if (objectKey.getBytes().length + objectValue.length > MAX_SEGMENT_SIZE) {
-//                return true;
-//                //return false;
-//            }
+        if (objectValue != null) {
             record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
         } else {
             record = new RemoveDatabaseRecord(objectKey.getBytes());
@@ -85,11 +77,10 @@ public class SegmentImpl implements Segment {
             OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
             DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
             long offset = this.getOffset();
-            stream.write(record);
-            //if (stream.write(record) == record.size()) {
+            if (stream.write(record) == record.size()) {
                 this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
                 return true;
-            //}
+            }
         }
 
         return false;
@@ -129,31 +120,31 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean delete(String objectKey) throws IOException {
 
-        WritableDatabaseRecord record = new RemoveDatabaseRecord(objectKey.getBytes());
-        if (!isReadOnly()) {
-            OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
-            DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
-            long offset = this.getOffset();
-            stream.write(record);
-            //if (stream.write(record) == record.size()) {
-                this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-                return true;
-            //}
-        }
+        return this.write(objectKey, null);
+//        WritableDatabaseRecord record = new RemoveDatabaseRecord(objectKey.getBytes());
+//        if (!isReadOnly()) {
+//            OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
+//            DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
+//            long offset = this.getOffset();
+//            if (stream.write(record) == record.size()) {
+//                this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
+//                return true;
+//            }
+//        }
 
-        return false;
+//        return false;
 
     }
+
+    private String segmentName;
+    private Path segmentPath;
+    private SegmentIndex segmentIndex;
 
     private SegmentImpl(String _segmentName, Path _segmentPath) {
         this.segmentName = _segmentName;
         this.segmentPath = _segmentPath;
         this.segmentIndex = new SegmentIndex();
     }
-
-    private String segmentName;
-    private Path segmentPath;
-    private SegmentIndex segmentIndex;
 
     private long getOffset() {
         File f = new File(this.segmentPath.toString());

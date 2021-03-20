@@ -17,9 +17,8 @@ public class SetDatabaseRecord implements WritableDatabaseRecord {
 
     @Override
     public long size() {
-        long s = DatabaseInputStream.KEY_SIZE_FIELD + this.key.length + DatabaseInputStream.VALUE_SIZE_FIELD;
-        s += this.value.length;
-        return s;
+        return DatabaseInputStream.KEY_SIZE_FIELD + this.key.length +
+                DatabaseInputStream.VALUE_SIZE_FIELD + this.value.length;
     }
 
     @Override

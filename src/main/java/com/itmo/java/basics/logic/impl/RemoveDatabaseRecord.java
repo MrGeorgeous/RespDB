@@ -17,8 +17,8 @@ public class RemoveDatabaseRecord implements WritableDatabaseRecord {
 
     @Override
     public long size() {
-        long s = DatabaseInputStream.KEY_SIZE_FIELD + this.key.length + DatabaseInputStream.VALUE_SIZE_FIELD;
-        return s;
+        return DatabaseInputStream.KEY_SIZE_FIELD + this.key.length +
+                DatabaseInputStream.VALUE_SIZE_FIELD;
     }
 
     @Override
