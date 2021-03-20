@@ -76,7 +76,7 @@ public class SegmentImpl implements Segment {
         DatabaseOutputStream dbStream = new DatabaseOutputStream(ioStream);
 
         long offset = this.getOffset();
-        if (/*!isReadOnly()*/ offset >= MAX_SEGMENT_SIZE ) {
+        if (/*!isReadOnly()*/ offset < MAX_SEGMENT_SIZE ) {
             dbStream.write(record);
             this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
             ioStream.close();
