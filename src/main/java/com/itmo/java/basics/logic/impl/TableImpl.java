@@ -53,18 +53,29 @@ public class TableImpl implements Table {
 
         this.validate(objectKey);
 
-        if ((segments.size() == 0) || segments.get(segments.size() - 1).isReadOnly()) {
-            this.addNewSegment();
+        try {
+            if (segments.size() == 0) {
+                this.addNewSegment();
+            }
+            if (segments.get(segments.size() - 1).isReadOnly()) {
+                this.addNewSegment();
+            }
+            if (segments.get(segments.size() - 1).write(objectKey, objectValue)) {
+                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+            }
+        } catch (IOException e) {
+            throw new DatabaseException("IO fault.");
         }
 
-        if (!tryWrite(objectKey, objectValue)) {
-            throw new DatabaseException("Impossible to write entry.");
+
+        //if (!tryWrite(objectKey, objectValue)) {
+        //    throw new DatabaseException("Impossible to write entry.");
 //            this.addNewSegment();
 //            if (!tryWrite(objectKey, objectValue)) {
 //                this.rollbackNewSegment();
 //                throw new DatabaseException("Impossible to write entry.");
 //            }
-        }
+        //}
 
     }
 
@@ -122,18 +133,6 @@ public class TableImpl implements Table {
 
     protected void rollbackNewSegment() throws DatabaseException {
         segments.remove(segments.size() - 1);
-    }
-
-    protected boolean tryWrite(String objectKey, byte[] objectValue) throws DatabaseException {
-        try {
-            if (segments.get(segments.size() - 1).write(objectKey, objectValue)) {
-                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-                return true;
-            }
-        } catch (IOException e) {
-            throw new DatabaseException("IO fault.");
-        }
-        return false;
     }
 
 //    protected boolean tryDelete(String objectKey) throws DatabaseException {
