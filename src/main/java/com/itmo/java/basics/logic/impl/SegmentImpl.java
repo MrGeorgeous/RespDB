@@ -26,12 +26,12 @@ public class SegmentImpl implements Segment {
 
     public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
-        if (segmentName.length() == 0) {
-            throw new DatabaseException("Empty segment name.");
-        }
+        //if (segmentName.length() == 0) {
+        //    throw new DatabaseException("Empty segment name.");
+        //}
 
-        if (Files.isDirectory(tableRootPath)) {
-            if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
+        //if (Files.isDirectory(tableRootPath)) {
+        //    if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
 
                 File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
                 segmentFile.getParentFile().mkdirs();
@@ -46,10 +46,10 @@ public class SegmentImpl implements Segment {
 
                 return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath());
 
-            }
-        }
+        //    }
+        //}
 
-        throw new DatabaseException("Path is not valid.");
+        //throw new DatabaseException("Path is not valid.");
 
     }
 
