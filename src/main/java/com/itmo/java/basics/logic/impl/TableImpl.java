@@ -26,20 +26,21 @@ public class TableImpl implements Table {
             throw new DatabaseException("Empty segment name.");
         }
 
-        if (Files.isDirectory(pathToDatabaseRoot)) {
-            if (Files.isReadable(pathToDatabaseRoot) && Files.isWritable(pathToDatabaseRoot)) {
+        //if (Files.isDirectory(pathToDatabaseRoot)) {
+        //    if (Files.isReadable(pathToDatabaseRoot) && Files.isWritable(pathToDatabaseRoot)) {
                 Path tablePath = pathToDatabaseRoot.resolve(tableName);
                 File f = new File(tablePath.toString());
+                f.mkdirs();
                 if (!Files.exists(tablePath)) {
                     if (!f.mkdir()) {
                         throw new DatabaseException("Table directory can not be created.");
                     }
                 }
                 return new TableImpl(tableName, tablePath, tableIndex);
-            }
-        }
+        //}
+        //}
 
-        throw new DatabaseException("Table is not given a valid path.");
+        //throw new DatabaseException("Table is not given a valid path.");
 
     }
 
@@ -53,18 +54,18 @@ public class TableImpl implements Table {
 
         this.validate(objectKey);
 
-            if (segments.size() == 0) {
-                this.addNewSegment();
-            }
+        if (segments.size() == 0) {
+            this.addNewSegment();
+        }
 
-            try {
-                if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
-                    this.addNewSegment();
-                    segments.get(segments.size() - 1).write(objectKey, objectValue);
-                }
-            } catch (IOException e) {
-                //throw new DatabaseException("IO fault.");
+        try {
+            if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
+                this.addNewSegment();
+                segments.get(segments.size() - 1).write(objectKey, objectValue);
             }
+        } catch (Exception e) {
+            //throw new DatabaseException("IO fault.");
+        }
 
         tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
 
