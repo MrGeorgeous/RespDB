@@ -69,7 +69,7 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
-        if (this.isReadOnly() || (this.getOffset() + objectValue.length > MAX_SEGMENT_SIZE)) {
+        if (this.isReadOnly() /*|| (this.getOffset() + objectValue.length > MAX_SEGMENT_SIZE)*/) {
             return false;
         }
 
