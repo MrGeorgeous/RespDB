@@ -58,36 +58,15 @@ public class TableImpl implements Table {
             this.addNewSegment();
         }
 
-        boolean writeToCurrent = false;
         try {
-            writeToCurrent = segments.get(segments.size() - 1).write(objectKey, objectValue);
-        } catch (Exception e) {}
-
-        if (!writeToCurrent) {
-            this.addNewSegment();
-            try {
-                writeToCurrent = segments.get(segments.size() - 1).write(objectKey, objectValue);
-            } catch (Exception e) {}
-        } else {
+            if (!(segments.get(segments.size() - 1).write(objectKey, objectValue))) {
+                this.addNewSegment();
+                segments.get(segments.size() - 1).write(objectKey, objectValue);
+            }
             tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-            return;
-        }
-
-        if (!writeToCurrent) {
+        } catch (Exception e) {
             throw new DatabaseException("IO fault.");
-        } else {
-            tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-            return;
         }
-
-        //if (!tryWrite(objectKey, objectValue)) {
-        //    throw new DatabaseException("Impossible to write entry.");
-//            this.addNewSegment();
-//            if (!tryWrite(objectKey, objectValue)) {
-//                this.rollbackNewSegment();
-//                throw new DatabaseException("Impossible to write entry.");
-//            }
-        //}
 
     }
 

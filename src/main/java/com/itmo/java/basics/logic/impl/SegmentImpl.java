@@ -33,7 +33,7 @@ public class SegmentImpl implements Segment {
                 File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
                 segmentFile.getParentFile().mkdirs();
 
-                if (!segmentFile.exists()) {
+                if (!(segmentFile.exists())) {
                     try {
                         Files.createFile(segmentFile.toPath());
                     } catch (IOException e) {
@@ -70,7 +70,6 @@ public class SegmentImpl implements Segment {
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
         if (this.isReadOnly()) {
-            this.outDbStream.close();
             return false;
         }
 
@@ -86,6 +85,10 @@ public class SegmentImpl implements Segment {
         this.currentOffset += outDbStream.write(record);
         this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
         outDbStream.flush();
+
+        if (this.isReadOnly()) {
+            this.outDbStream.close();
+        }
 
         return true;
 
