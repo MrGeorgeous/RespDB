@@ -58,14 +58,21 @@ public class TableImpl implements Table {
             this.addNewSegment();
         }
 
+        boolean writeToCurrent = false;
         try {
-            if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
-                this.addNewSegment();
-                segments.get(segments.size() - 1).write(objectKey, objectValue);
-            }
-            tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+            writeToCurrent = segments.get(segments.size() - 1).write(objectKey, objectValue);
         } catch (Exception e) {
             //throw new DatabaseException("IO fault.");
+        }
+
+        try {
+            if (!writeToCurrent) {
+                this.addNewSegment();
+                segments.get(segments.size() - 1).write(objectKey, objectValue);
+                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+            }
+        } catch (Exception e) {
+            throw new DatabaseException("IO fault.");
         }
 
 

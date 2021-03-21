@@ -17,13 +17,13 @@ import java.util.Optional;
 public class DatabaseImpl implements Database {
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
-//        if ((dbName == null) || (dbName.length() == 0)) {
-//            throw new DatabaseException("Empty db name.");
-//        }
-        //if (Files.exists(databaseRoot) && Files.isDirectory(databaseRoot)) {
+        if ((dbName == null) || (dbName.length() == 0)) {
+            throw new DatabaseException("Empty db name.");
+        }
+        if (Files.exists(databaseRoot) && Files.isDirectory(databaseRoot)) {
             return new DatabaseImpl(dbName, databaseRoot);
-        //}
-        //throw new DatabaseException("Given path is not a directory");
+        }
+        throw new DatabaseException("Given path is not a directory");
     }
 
     @Override

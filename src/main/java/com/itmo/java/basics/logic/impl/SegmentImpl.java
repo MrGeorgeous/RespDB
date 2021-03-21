@@ -69,6 +69,10 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
+        if (this.isReadOnly()) {
+            return false;
+        }
+
         WritableDatabaseRecord record;
         if (objectValue != null) {
             record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
@@ -77,13 +81,12 @@ public class SegmentImpl implements Segment {
         }
 
         long offset = this.getOffset();
-        if (offset < MAX_SEGMENT_SIZE ) {
-            this.currentOffset += outDbStream.write(record);
-            this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-            return true;
-        }
 
-        return false;
+
+        this.currentOffset += outDbStream.write(record);
+        this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
+
+        return true;
 
     }
 
