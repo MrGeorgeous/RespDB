@@ -40,7 +40,7 @@ public class SegmentImpl implements Segment {
                     try {
                         Files.createFile(segmentFile.toPath());
                     } catch (IOException e) {
-                        throw new DatabaseException("Segment file can not be created.");
+                        //throw new DatabaseException("Segment file can not be created.");
                     }
                 }
 
