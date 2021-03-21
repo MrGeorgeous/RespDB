@@ -12,13 +12,12 @@ public class RemoveDatabaseRecord implements WritableDatabaseRecord {
 
     @Override
     public byte[] getValue() {
-        return new byte[0];
+        return null;
     }
 
     @Override
     public long size() {
-        return DatabaseInputStream.KEY_SIZE_FIELD + this.key.length +
-                DatabaseInputStream.VALUE_SIZE_FIELD;
+        return 8 + this.key.length;
     }
 
     @Override
@@ -40,6 +39,6 @@ public class RemoveDatabaseRecord implements WritableDatabaseRecord {
         this.key = k;
     }
 
-    protected byte[] key;
+    private byte[] key;
 
 }

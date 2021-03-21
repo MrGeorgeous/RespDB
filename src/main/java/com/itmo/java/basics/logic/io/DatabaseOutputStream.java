@@ -32,26 +32,13 @@ public class DatabaseOutputStream extends DataOutputStream {
      * @throws IOException если запись не удалась
      */
     public int write(WritableDatabaseRecord databaseRecord) throws IOException {
-
-        int lengthOriginal = this.size();
-
-        //this.write(ByteBuffer.allocate(DatabaseInputStream.KEY_SIZE_FIELD).putInt(databaseRecord.getKeySize()).array());
         this.writeInt(databaseRecord.getKeySize());
         this.write(databaseRecord.getKey());
         this.writeInt(databaseRecord.getValueSize());
-        //this.write(ByteBuffer.allocate(DatabaseInputStream.VALUE_SIZE_FIELD).putInt(databaseRecord.getValueSize()).array());
         if (databaseRecord.isValuePresented()) {
             this.write(databaseRecord.getValue());
         }
-
-        int bytesWritten = this.size() - lengthOriginal;
-
-//        if (bytesWritten != databaseRecord.size()) {
-//            throw new IOException("Could not write to file.");
-//        }
-
         return (int) databaseRecord.size();
-
     }
 
 }

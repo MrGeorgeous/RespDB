@@ -20,45 +20,37 @@ import java.nio.file.Files;
 
 public class SegmentImpl implements Segment {
 
-    private static final int MAX_SEGMENT_SIZE = 100_000; // in bytes
+    private static final int MAX_SEGMENT_SIZE = 100_000;
 
-    public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
+    static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
-        //if (segmentName.length() == 0) {
-        //    throw new DatabaseException("Empty segment name.");
-        //}
+        if (segmentName.length() == 0) {
+            throw new DatabaseException("Empty segment name.");
+        }
 
-        //if (Files.isDirectory(tableRootPath)) {
-        //    if (Files.isReadable(tableRootPath) && Files.isWritable(tableRootPath)) {
+        if (Files.isDirectory(tableRootPath)) {
 
-                File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
-                segmentFile.getParentFile().mkdirs();
+            File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
+            segmentFile.getParentFile().mkdirs();
 
+            try {
                 if (!(segmentFile.exists())) {
-                    try {
-                        Files.createFile(segmentFile.toPath());
-                    } catch (IOException e) {
-                        //throw new DatabaseException("Segment file can not be created.");
-                    }
+                    Files.createFile(segmentFile.toPath());
                 }
+                OutputStream ioStream = new FileOutputStream(segmentFile.toPath().toAbsolutePath().toString(), true);
+                DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
+                return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath(), outDbStream);
+            } catch (IOException e) {
+                throw new DatabaseException("Segment file can not be created or accessed.");
+            }
 
-                try {
-                    OutputStream ioStream = new FileOutputStream(segmentFile.toPath().toAbsolutePath().toString(), true);
-                    DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
-                    return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath(), outDbStream);
-                } catch (Exception e) {
-
-                }
-
-
-        //    }
-        //}
+        }
 
         throw new DatabaseException("Path is not valid.");
 
     }
 
-    public static String createSegmentName(String tableName) {
+    static String createSegmentName(String tableName) {
         return tableName + "_" + System.currentTimeMillis();
     }
 
@@ -70,7 +62,9 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
-        if (this.isReadOnly() /*|| (this.getOffset() + objectValue.length > MAX_SEGMENT_SIZE)*/) {
+        if (this.isReadOnly()) {
+            outDbStream.flush();
+            outDbStream.close();
             return false;
         }
 
@@ -82,14 +76,8 @@ public class SegmentImpl implements Segment {
         }
 
         long offset = this.getOffset();
-
         this.currentOffset += outDbStream.write(record);
         this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-        outDbStream.flush();
-
-        if (this.isReadOnly()) {
-            this.outDbStream.close();
-        }
 
         return true;
 
@@ -114,7 +102,7 @@ public class SegmentImpl implements Segment {
             }
         }
 
-        if ((record != null) && record.isValuePresented() /* && (record.getValue().length != 0) */) {
+        if ((record != null) && record.isValuePresented()) {
             return Optional.of(record.getValue());
         }
 
@@ -124,7 +112,7 @@ public class SegmentImpl implements Segment {
 
     @Override
     public boolean isReadOnly() {
-        return (getOffset() >= MAX_SEGMENT_SIZE);
+        return getOffset() >= MAX_SEGMENT_SIZE;
     }
 
     @Override
@@ -148,8 +136,6 @@ public class SegmentImpl implements Segment {
 
     private long getOffset() {
         return this.currentOffset;
-        //File f = new File(this.segmentPath.toString());
-        //return f.length();
     }
 
 }

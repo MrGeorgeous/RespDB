@@ -18,23 +18,24 @@ import java.util.Optional;
 public class DatabaseImpl implements Database {
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
+
         if ((dbName == null) || (dbName.length() == 0)) {
-            throw new DatabaseException("Empty db name.");
+            throw new DatabaseException("Empty database name.");
         }
 
         Path dbPath = databaseRoot.resolve(dbName);
         File f = new File(dbPath.toString());
-        f.mkdirs();
-        if (!Files.exists(dbPath)) {
+        if (!f.exists()) {
             if (!f.mkdir()) {
                 throw new DatabaseException("DB directory can not be created.");
             }
         }
 
-        if (Files.exists(databaseRoot) && Files.isDirectory(databaseRoot)) {
+        if (Files.exists(dbPath) && Files.isDirectory(dbPath)) {
             return new DatabaseImpl(dbName, dbPath);
         }
         throw new DatabaseException("Given path is not a directory");
+
     }
 
     @Override
@@ -44,42 +45,31 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void createTableIfNotExists(String tableName) throws DatabaseException {
-        this.validate(tableName);
-        if (!tables.containsKey(tableName)) {
-            tables.put(tableName, TableImpl.create(tableName, this.root, new TableIndex()));
-        } else {
+        if ((tableName == null) || (tableName.length() == 0)) {
+            throw new DatabaseException("Empty table name.");
+        }
+        if (this.tables.containsKey(tableName)) {
             throw new DatabaseException("Table already exists.");
         }
+        this.tables.put(tableName, TableImpl.create(tableName, this.root, new TableIndex()));
     }
 
     @Override
     public void write(String tableName, String objectKey, byte[] objectValue) throws DatabaseException {
-        this.validate(tableName, objectKey, objectValue);
-        if (tables.containsKey(tableName)) {
-            tables.get(tableName).write(objectKey, objectValue);
-        } else {
-            throw new DatabaseException("No such table.");
-        }
+        this.validate(tableName, objectKey);
+        this.tables.get(tableName).write(objectKey, objectValue);
     }
 
     @Override
     public Optional<byte[]> read(String tableName, String objectKey) throws DatabaseException {
         this.validate(tableName, objectKey);
-        if (tables.containsKey(tableName)) {
-            return tables.get(tableName).read(objectKey);
-        } else {
-            throw new DatabaseException("No such table.");
-        }
+        return this.tables.get(tableName).read(objectKey);
     }
 
     @Override
     public void delete(String tableName, String objectKey) throws DatabaseException {
         this.validate(tableName, objectKey);
-        if (tables.containsKey(tableName)) {
-            tables.get(tableName).delete(objectKey);
-        } else {
-            throw new DatabaseException("No such table.");
-        }
+        this.tables.get(tableName).delete(objectKey);
     }
 
     private DatabaseImpl(String dbName, Path databaseRoot) {
@@ -96,21 +86,17 @@ public class DatabaseImpl implements Database {
         if ((tableName == null) || (tableName.length() == 0)) {
             throw new DatabaseException("Empty table name.");
         }
+        if (!this.tables.containsKey(tableName)){
+            throw new DatabaseException("No such table.");
+        }
     }
+
     private void validate(String tableName, String objectKey) throws DatabaseException {
-       this.validate(tableName);
+        this.validate(tableName);
         if ((objectKey == null) || (objectKey.length() == 0)) {
             throw new DatabaseException("Empty object key.");
         }
     }
-
-    private void validate(String tableName, String objectKey, byte[] objectValue) throws DatabaseException {
-        this.validate(tableName, objectKey);
-        //if ((objectValue == null) || (objectValue.length == 0)) {
-        //    throw new DatabaseException("Null object value.");
-        //}
-    }
-
 
 
 }

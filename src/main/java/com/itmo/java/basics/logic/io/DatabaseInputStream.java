@@ -16,10 +16,6 @@ import java.nio.ByteBuffer;
  */
 public class DatabaseInputStream extends DataInputStream {
 
-    // THESE VALUES ARE HARDCODED
-    // AND ARE NOT SUBJECT TO CHANGES
-    public static final int KEY_SIZE_FIELD = 4; // in bytes (int)
-    public static final int VALUE_SIZE_FIELD = 4; // in bytes (int)
     private static final int REMOVED_OBJECT_SIZE = -1;
 
     public DatabaseInputStream(InputStream inputStream) {
@@ -32,7 +28,6 @@ public class DatabaseInputStream extends DataInputStream {
      */
     public Optional<DatabaseRecord> readDbUnit() throws IOException {
 
-
         int keySize = this.readInt();
         byte[] key = this.readNBytes(keySize);
         int valueSize = this.readInt();
@@ -44,49 +39,6 @@ public class DatabaseInputStream extends DataInputStream {
             return Optional.of(new RemoveDatabaseRecord(key));
         }
 
-
-//        Optional<byte[]> buffer;
-//
-//        // read key size
-//        buffer = this.tryReadNBytes(KEY_SIZE_FIELD);
-//        if (buffer.isEmpty()) {
-//            return Optional.empty();
-//        }
-//        int keySize = ByteBuffer.wrap(buffer.get()).getInt();
-//
-//        // read key
-//        buffer = this.tryReadNBytes(keySize);
-//        if (buffer.isEmpty()) {
-//            return Optional.empty();
-//        }
-//        byte[] key = buffer.get();
-//
-//        // read value size
-//        buffer = this.tryReadNBytes(VALUE_SIZE_FIELD);
-//        if (buffer.isEmpty()) {
-//            return Optional.empty();
-//        }
-//        int valueSize = ByteBuffer.wrap(buffer.get()).getInt();
-//
-//        // read value
-//        if (/*(valueSize != 0) &&*/ (valueSize != REMOVED_OBJECT_SIZE)) {
-//            Optional<byte[]> value = this.tryReadNBytes(valueSize);
-//            if (value.isEmpty()) {
-//                return Optional.empty();
-//            }
-//            return Optional.of(new SetDatabaseRecord(key, value.get()));
-//        } else {
-//            return Optional.of(new RemoveDatabaseRecord(key));
-//        }
-
     }
-
-//    private Optional<byte[]> tryReadNBytes(int N) throws IOException {
-//        byte[] data = this.readNBytes(N);
-//        if (data.length == N) {
-//            return Optional.of(data);
-//        }
-//        return Optional.empty();
-//    }
 
 }
