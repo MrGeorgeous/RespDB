@@ -101,9 +101,11 @@ public class SegmentImpl implements Segment {
         DatabaseInputStream dbStream = new DatabaseInputStream(ioStream);
 
         DatabaseRecord record = null;
-        Optional<SegmentOffsetInfo> offset = segmentIndex.searchForKey(objectKey);
-        if (offset.isPresent()) {
-            if (dbStream.skip(offset.get().getOffset()) == this.getOffset()) {
+
+        Optional<SegmentOffsetInfo> offsetInfo = segmentIndex.searchForKey(objectKey);
+        if (offsetInfo.isPresent()) {
+            int offset = (int) offsetInfo.get().getOffset();
+            if (dbStream.skip(offset) == offset) {
                 Optional<DatabaseRecord> r = dbStream.readDbUnit();
                 if (r.isPresent()) {
                     record = r.get();
