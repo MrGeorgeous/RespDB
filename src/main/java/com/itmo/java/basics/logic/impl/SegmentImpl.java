@@ -11,6 +11,7 @@ import com.itmo.java.basics.logic.io.DatabaseInputStream;
 import com.itmo.java.basics.logic.io.DatabaseOutputStream;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.io.*;
@@ -75,9 +76,9 @@ public class SegmentImpl implements Segment {
 
         WritableDatabaseRecord record;
         if (objectValue != null) {
-            record = new SetDatabaseRecord(objectKey.getBytes(), objectValue);
+            record = new SetDatabaseRecord(objectKey.getBytes(StandardCharsets.UTF_8), objectValue);
         } else {
-            record = new RemoveDatabaseRecord(objectKey.getBytes());
+            record = new RemoveDatabaseRecord(objectKey.getBytes(StandardCharsets.UTF_8));
         }
 
         long offset = this.getOffset();
