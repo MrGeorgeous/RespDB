@@ -1,5 +1,6 @@
 # Лаб №1. Логика сохранения и получения значения по ключу
 
+#### Георгий Семенов M32011
 [Последний тест](http://77.234.215.138:28090/job/Semenov-lab1/57/console)
 
 Устройство файловой системы: `workspaceRoot/dbName/tableName/segmentName_timestamp`
