@@ -5,6 +5,7 @@ import com.itmo.java.basics.index.impl.TableIndex;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Table;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -20,8 +21,18 @@ public class DatabaseImpl implements Database {
         if ((dbName == null) || (dbName.length() == 0)) {
             throw new DatabaseException("Empty db name.");
         }
+
+        Path dbPath = databaseRoot.resolve(dbName);
+        File f = new File(dbPath.toString());
+        f.mkdirs();
+        if (!Files.exists(dbPath)) {
+            if (!f.mkdir()) {
+                throw new DatabaseException("DB directory can not be created.");
+            }
+        }
+
         if (Files.exists(databaseRoot) && Files.isDirectory(databaseRoot)) {
-            return new DatabaseImpl(dbName, databaseRoot);
+            return new DatabaseImpl(dbName, dbPath);
         }
         throw new DatabaseException("Given path is not a directory");
     }
