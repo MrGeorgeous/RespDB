@@ -61,21 +61,24 @@ public class TableImpl implements Table {
         boolean writeToCurrent = false;
         try {
             writeToCurrent = segments.get(segments.size() - 1).write(objectKey, objectValue);
-        } catch (Exception e) {
-            //throw new DatabaseException("IO fault.");
+        } catch (Exception e) {}
+
+        if (!writeToCurrent) {
+            this.addNewSegment();
+            try {
+                writeToCurrent = segments.get(segments.size() - 1).write(objectKey, objectValue);
+            } catch (Exception e) {}
+        } else {
+            tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+            return;
         }
 
-        try {
-            if (!writeToCurrent) {
-                this.addNewSegment();
-                segments.get(segments.size() - 1).write(objectKey, objectValue);
-                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-            }
-        } catch (Exception e) {
+        if (!writeToCurrent) {
             throw new DatabaseException("IO fault.");
+        } else {
+            tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
+            return;
         }
-
-
 
         //if (!tryWrite(objectKey, objectValue)) {
         //    throw new DatabaseException("Impossible to write entry.");
@@ -98,7 +101,7 @@ public class TableImpl implements Table {
             try {
                 return s.get().read(objectKey);
             } catch (IOException e) {
-                //throw new DatabaseException("IO fault.");
+                throw new DatabaseException("IO fault.");
             }
         }
 

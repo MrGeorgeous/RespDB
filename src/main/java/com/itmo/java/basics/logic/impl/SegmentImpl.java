@@ -82,9 +82,10 @@ public class SegmentImpl implements Segment {
 
         long offset = this.getOffset();
 
-
         this.currentOffset += outDbStream.write(record);
         this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
+
+        outDbStream.flush();
 
         return true;
 
