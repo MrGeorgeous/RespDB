@@ -22,9 +22,9 @@ public class TableImpl implements Table {
 
     public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
 
-        if (tableName.length() == 0) {
-            throw new DatabaseException("Empty segment name.");
-        }
+//        if (tableName.length() == 0) {
+//            throw new DatabaseException("Empty segment name.");
+//        }
 
         //if (Files.isDirectory(pathToDatabaseRoot)) {
         //    if (Files.isReadable(pathToDatabaseRoot) && Files.isWritable(pathToDatabaseRoot)) {
@@ -33,7 +33,7 @@ public class TableImpl implements Table {
                 f.mkdirs();
                 if (!Files.exists(tablePath)) {
                     if (!f.mkdir()) {
-                        throw new DatabaseException("Table directory can not be created.");
+                        //throw new DatabaseException("Table directory can not be created.");
                     }
                 }
                 return new TableImpl(tableName, tablePath, tableIndex);
