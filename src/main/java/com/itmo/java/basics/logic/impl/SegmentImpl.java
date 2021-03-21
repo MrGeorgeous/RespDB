@@ -70,6 +70,7 @@ public class SegmentImpl implements Segment {
     public boolean write(String objectKey, byte[] objectValue) throws IOException {
 
         if (this.isReadOnly()) {
+            this.outDbStream.close();
             return false;
         }
 
@@ -84,7 +85,6 @@ public class SegmentImpl implements Segment {
 
         this.currentOffset += outDbStream.write(record);
         this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-
         outDbStream.flush();
 
         return true;
@@ -100,15 +100,13 @@ public class SegmentImpl implements Segment {
         DatabaseRecord record = null;
         Optional<SegmentOffsetInfo> offset = segmentIndex.searchForKey(objectKey);
         if (offset.isPresent()) {
-            dbStream.skip(offset.get().getOffset());
-            Optional<DatabaseRecord> r = dbStream.readDbUnit();
-            if (r.isPresent()) {
-                record = r.get();
+            if (dbStream.skip(offset.get().getOffset()) == this.getOffset()) {
+                Optional<DatabaseRecord> r = dbStream.readDbUnit();
+                if (r.isPresent()) {
+                    record = r.get();
+                }
             }
         }
-
-        ioStream.close();
-        dbStream.close();
 
         if ((record != null) && record.isValuePresented() /* && (record.getValue().length != 0) */) {
             return Optional.of(record.getValue());
@@ -131,13 +129,14 @@ public class SegmentImpl implements Segment {
     private String segmentName;
     private Path segmentPath;
     private SegmentIndex segmentIndex;
-    private long currentOffset = 0;
+    private long currentOffset;
     private DatabaseOutputStream outDbStream = null;
 
     private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
         this.segmentName = _segmentName;
         this.segmentPath = _segmentPath;
         this.segmentIndex = new SegmentIndex();
+        this.currentOffset = 0;
         this.outDbStream = _outDbStream;
     }
 

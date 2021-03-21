@@ -35,18 +35,20 @@ public class DatabaseOutputStream extends DataOutputStream {
 
         int lengthOriginal = this.size();
 
-        this.write(ByteBuffer.allocate(DatabaseInputStream.KEY_SIZE_FIELD).putInt(databaseRecord.getKeySize()).array());
+        //this.write(ByteBuffer.allocate(DatabaseInputStream.KEY_SIZE_FIELD).putInt(databaseRecord.getKeySize()).array());
+        this.writeInt(databaseRecord.getKeySize());
         this.write(databaseRecord.getKey());
-        this.write(ByteBuffer.allocate(DatabaseInputStream.VALUE_SIZE_FIELD).putInt(databaseRecord.getValueSize()).array());
+        this.writeInt(databaseRecord.getValueSize());
+        //this.write(ByteBuffer.allocate(DatabaseInputStream.VALUE_SIZE_FIELD).putInt(databaseRecord.getValueSize()).array());
         if (databaseRecord.isValuePresented()) {
             this.write(databaseRecord.getValue());
         }
 
         int bytesWritten = this.size() - lengthOriginal;
 
-        if (bytesWritten != databaseRecord.size()) {
-            throw new IOException("Could not write to file.");
-        }
+//        if (bytesWritten != databaseRecord.size()) {
+//            throw new IOException("Could not write to file.");
+//        }
 
         return (int) databaseRecord.size();
 
