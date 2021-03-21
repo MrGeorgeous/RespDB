@@ -13,12 +13,9 @@ import com.itmo.java.basics.logic.io.DatabaseOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
+
 
 public class SegmentImpl implements Segment {
 
@@ -44,12 +41,19 @@ public class SegmentImpl implements Segment {
                     }
                 }
 
-                return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath());
+                try {
+                    OutputStream ioStream = new FileOutputStream(segmentFile.toPath().toAbsolutePath().toString(), true);
+                    DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
+                    return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath(), outDbStream);
+                } catch (Exception e) {
+
+                }
+
 
         //    }
         //}
 
-        //throw new DatabaseException("Path is not valid.");
+        throw new DatabaseException("Path is not valid.");
 
     }
 
@@ -72,21 +76,12 @@ public class SegmentImpl implements Segment {
             record = new RemoveDatabaseRecord(objectKey.getBytes());
         }
 
-        OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
-        DatabaseOutputStream dbStream = new DatabaseOutputStream(ioStream);
-
         long offset = this.getOffset();
-        if (/*!isReadOnly()*/ offset < MAX_SEGMENT_SIZE ) {
-            dbStream.write(record);
-            this.currentOffset += record.size();
+        if (offset < MAX_SEGMENT_SIZE ) {
+            this.currentOffset += outDbStream.write(record);
             this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-            ioStream.close();
-            dbStream.close();
             return true;
         }
-
-        ioStream.close();
-        dbStream.close();
 
         return false;
 
@@ -126,32 +121,20 @@ public class SegmentImpl implements Segment {
 
     @Override
     public boolean delete(String objectKey) throws IOException {
-
         return this.write(objectKey, null);
-//        WritableDatabaseRecord record = new RemoveDatabaseRecord(objectKey.getBytes());
-//        if (!isReadOnly()) {
-//            OutputStream ioStream = new FileOutputStream(this.segmentPath.toString(), true);
-//            DatabaseOutputStream stream = new DatabaseOutputStream(ioStream);
-//            long offset = this.getOffset();
-//            if (stream.write(record) == record.size()) {
-//                this.segmentIndex.onIndexedEntityUpdated(objectKey, new SegmentOffsetInfoImpl(offset));
-//                return true;
-//            }
-//        }
-
-//        return false;
-
     }
 
     private String segmentName;
     private Path segmentPath;
     private SegmentIndex segmentIndex;
     private long currentOffset = 0;
+    private DatabaseOutputStream outDbStream = null;
 
-    private SegmentImpl(String _segmentName, Path _segmentPath) {
+    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
         this.segmentName = _segmentName;
         this.segmentPath = _segmentPath;
         this.segmentIndex = new SegmentIndex();
+        this.outDbStream = _outDbStream;
     }
 
     private long getOffset() {

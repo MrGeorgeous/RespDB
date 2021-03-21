@@ -63,11 +63,11 @@ public class TableImpl implements Table {
                 this.addNewSegment();
                 segments.get(segments.size() - 1).write(objectKey, objectValue);
             }
+            tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
         } catch (Exception e) {
             //throw new DatabaseException("IO fault.");
         }
 
-        tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
 
 
         //if (!tryWrite(objectKey, objectValue)) {
@@ -91,7 +91,7 @@ public class TableImpl implements Table {
             try {
                 return s.get().read(objectKey);
             } catch (IOException e) {
-                throw new DatabaseException("IO fault.");
+                //throw new DatabaseException("IO fault.");
             }
         }
 
@@ -104,16 +104,6 @@ public class TableImpl implements Table {
 
         this.validate(objectKey);
         this.write(objectKey, null);
-
-//        if (segments.size() == 0) {
-//            this.addNewSegment();
-//        }
-//        if (!tryDelete(objectKey)) {
-//            this.addNewSegment();
-//            if (!tryDelete(objectKey)) {
-//                throw new DatabaseException("Impossible to delete entry.");
-//            }
-//        }
 
     }
 
@@ -136,19 +126,6 @@ public class TableImpl implements Table {
     protected void rollbackNewSegment() throws DatabaseException {
         segments.remove(segments.size() - 1);
     }
-
-//    protected boolean tryDelete(String objectKey) throws DatabaseException {
-//        return this.tryWrite(objectKey, null);
-////        try {
-////            if (segments.get(segments.size() - 1).delete(objectKey)) {
-////                tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
-////                return true;
-////            }
-////        } catch (IOException e) {
-////            throw new DatabaseException("IO fault.");
-////        }
-////        return false;
-//    }
 
     private void validate(String objectKey) throws DatabaseException {
         if (objectKey == null) {
