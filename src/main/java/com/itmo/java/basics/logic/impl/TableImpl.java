@@ -15,24 +15,44 @@ import java.util.ArrayList;
 
 public class TableImpl implements Table {
 
+    private String tableName;
+    private Path tablePath;
+    private TableIndex tableIndex;
+    private ArrayList<Segment> segments;
+
+    private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
+        this.tableName = tableName;
+        this.tablePath = tablePath;
+        this.tableIndex = tableIndex;
+        this.segments = new ArrayList<>();
+    }
+
+    private void addNewSegment() throws DatabaseException {
+        segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
+    }
+
+    private void validateKey(String objectKey) throws DatabaseException {
+        if ((objectKey == null) || (objectKey.length() == 0)) {
+            throw new DatabaseException("objectKey parameter is null or empty.");
+        }
+    }
+
     static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
 
-        if (tableName.length() == 0) {
-            throw new DatabaseException("Empty table name.");
+        if ((tableName == null) || (tableName.length() == 0)) {
+            throw new DatabaseException("tableName parameter is null or empty.");
         }
 
-        if (Files.isDirectory(pathToDatabaseRoot)) {
-            Path tablePath = pathToDatabaseRoot.resolve(tableName);
-            File f = new File(tablePath.toString());
-            if (!Files.exists(tablePath)) {
-                if (!f.mkdir()) {
-                    throw new DatabaseException("Table directory can not be created.");
-                }
-            }
-            return new TableImpl(tableName, tablePath, tableIndex);
+        if (!Files.isDirectory(pathToDatabaseRoot)) {
+            throw new DatabaseException("Table is not given a valid path.");
         }
 
-        throw new DatabaseException("Table is not given a valid path.");
+        Path tablePath = pathToDatabaseRoot.resolve(tableName);
+        File f = new File(tablePath.toString());
+        if (!Files.exists(tablePath) && !f.mkdir()) {
+            throw new DatabaseException("Table directory can not be created.");
+        }
+        return new TableImpl(tableName, tablePath, tableIndex);
 
     }
 
@@ -54,12 +74,12 @@ public class TableImpl implements Table {
             if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
                 this.addNewSegment();
                 if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
-                    throw new DatabaseException("IO fault.");
+                    throw new DatabaseException("Writing to new segment after overflow has failed unexpectedly.");
                 };
             }
             tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
         } catch (IOException e) {
-            throw new DatabaseException("IO fault.");
+            throw new DatabaseException("Writing to segments failed due to the IO failure.", e);
         }
 
     }
@@ -74,7 +94,7 @@ public class TableImpl implements Table {
             try {
                 return s.get().read(objectKey);
             } catch (IOException e) {
-                throw new DatabaseException("IO fault.");
+                throw new DatabaseException("Reading the segment has failed due to the IO failure.", e);
             }
         }
 
@@ -88,29 +108,5 @@ public class TableImpl implements Table {
         this.write(objectKey, null);
     }
 
-    private String tableName;
-    private Path tablePath;
-    private TableIndex tableIndex;
-    private ArrayList<Segment> segments;
-
-    private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
-        this.tableName = tableName;
-        this.tablePath = tablePath;
-        this.tableIndex = tableIndex;
-        this.segments = new ArrayList<>();
-    }
-
-    private void addNewSegment() throws DatabaseException {
-        segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
-    }
-
-    private void validateKey(String objectKey) throws DatabaseException {
-        if (objectKey == null) {
-            throw new DatabaseException("Empty object key.");
-        }
-        if (objectKey.length() == 0) {
-            throw new DatabaseException("Empty object key.");
-        }
-    }
 
 }

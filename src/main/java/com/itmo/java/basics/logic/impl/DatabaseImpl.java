@@ -8,33 +8,32 @@ import com.itmo.java.basics.logic.Table;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
-
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class DatabaseImpl implements Database {
+
+    private String name;
+    private Path root;
+    private Map<String, Table> tables;
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
 
         if ((dbName == null) || (dbName.length() == 0)) {
-            throw new DatabaseException("Empty database name.");
+            throw new DatabaseException("dbName parameter is null or an empty string.");
+        }
+        if (!Files.exists(databaseRoot) || !Files.isDirectory(databaseRoot)) {
+            throw new DatabaseException("databaseRoot parameter does not present an existing directory.");
         }
 
         Path dbPath = databaseRoot.resolve(dbName);
         File f = new File(dbPath.toString());
-        if (!f.exists()) {
-            if (!f.mkdir()) {
-                throw new DatabaseException("DB directory can not be created.");
-            }
+        if (!f.exists() || !f.mkdir()) {
+            throw new DatabaseException("Database subdirectory could not be accessed or created.");
         }
 
-        if (Files.exists(dbPath) && Files.isDirectory(dbPath)) {
-            return new DatabaseImpl(dbName, dbPath);
-        }
-        throw new DatabaseException("Given path is not a directory");
+        return new DatabaseImpl(dbName, dbPath);
 
     }
 
@@ -46,10 +45,10 @@ public class DatabaseImpl implements Database {
     @Override
     public void createTableIfNotExists(String tableName) throws DatabaseException {
         if ((tableName == null) || (tableName.length() == 0)) {
-            throw new DatabaseException("Empty table name.");
+            throw new DatabaseException("tableName parameter is null or empty.");
         }
         if (this.tables.containsKey(tableName)) {
-            throw new DatabaseException("Table already exists.");
+            throw new DatabaseException("Table '" + tableName + "' already exists and can not be created.");
         }
         this.tables.put(tableName, TableImpl.create(tableName, this.root, new TableIndex()));
     }
@@ -78,25 +77,20 @@ public class DatabaseImpl implements Database {
         this.tables = new HashMap<>();
     }
 
-    private String name;
-    private Path root;
-    private Map<String, Table> tables;
-
     private void validate(String tableName) throws DatabaseException {
         if ((tableName == null) || (tableName.length() == 0)) {
-            throw new DatabaseException("Empty table name.");
+            throw new DatabaseException("tableName parameter is null or empty.");
         }
         if (!this.tables.containsKey(tableName)){
-            throw new DatabaseException("No such table.");
+            throw new DatabaseException("There is no table corresponding to '" + tableName + "' tableName parameter.");
         }
     }
 
     private void validate(String tableName, String objectKey) throws DatabaseException {
         this.validate(tableName);
         if ((objectKey == null) || (objectKey.length() == 0)) {
-            throw new DatabaseException("Empty object key.");
+            throw new DatabaseException("objectKey parameter is null or an empty string.");
         }
     }
-
 
 }

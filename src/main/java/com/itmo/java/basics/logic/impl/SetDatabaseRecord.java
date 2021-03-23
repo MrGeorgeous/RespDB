@@ -5,6 +5,14 @@ import com.itmo.java.basics.logic.io.DatabaseInputStream;
 
 public class SetDatabaseRecord implements WritableDatabaseRecord {
 
+    private byte[] key;
+    private byte[] value;
+
+    public SetDatabaseRecord(byte[] k, byte[] v) {
+        this.key = k;
+        this.value = v;
+    }
+
     @Override
     public byte[] getKey() {
         return this.key;
@@ -34,13 +42,5 @@ public class SetDatabaseRecord implements WritableDatabaseRecord {
     public int getValueSize() {
         return this.value.length;
     }
-
-    public SetDatabaseRecord(byte[] k, byte[] v) {
-        this.key = k;
-        this.value = v;
-    }
-
-    private byte[] key;
-    private byte[] value;
 
 }

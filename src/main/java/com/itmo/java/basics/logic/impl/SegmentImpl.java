@@ -10,11 +10,10 @@ import com.itmo.java.basics.logic.WritableDatabaseRecord;
 import com.itmo.java.basics.logic.io.DatabaseInputStream;
 import com.itmo.java.basics.logic.io.DatabaseOutputStream;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.io.*;
 import java.nio.file.Files;
 
 
@@ -22,31 +21,45 @@ public class SegmentImpl implements Segment {
 
     private static final int MAX_SEGMENT_SIZE = 100_000;
 
+    private String segmentName;
+    private Path segmentPath;
+    private SegmentIndex segmentIndex;
+    private long currentOffset;
+    private DatabaseOutputStream outDbStream = null;
+
+    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
+        this.segmentName = _segmentName;
+        this.segmentPath = _segmentPath;
+        this.segmentIndex = new SegmentIndex();
+        this.currentOffset = 0;
+        this.outDbStream = _outDbStream;
+    }
+
+    private long getOffset() {
+        return this.currentOffset;
+    }
+
     static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
-        if (segmentName.length() == 0) {
-            throw new DatabaseException("Empty segment name.");
+        if ((segmentName == null) || (segmentName.length() == 0)) {
+            throw new DatabaseException("segmentName parameter is null or empty.");
         }
 
         if (Files.isDirectory(tableRootPath)) {
-
             File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
-            segmentFile.getParentFile().mkdirs();
-
             try {
-                if (!(segmentFile.exists())) {
+                if (!segmentFile.exists()) {
                     Files.createFile(segmentFile.toPath());
                 }
                 OutputStream ioStream = new FileOutputStream(segmentFile.toPath().toAbsolutePath().toString(), true);
                 DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
                 return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath(), outDbStream);
             } catch (IOException e) {
-                throw new DatabaseException("Segment file can not be created or accessed.");
+                throw new DatabaseException("Segment file could not be created or accessed.", e);
             }
-
         }
 
-        throw new DatabaseException("Path is not valid.");
+        throw new DatabaseException("tableRootPath parameter does not present an existing directory.");
 
     }
 
@@ -86,24 +99,20 @@ public class SegmentImpl implements Segment {
     @Override
     public Optional<byte[]> read(String objectKey) throws IOException {
 
+        Optional<SegmentOffsetInfo> offsetInfo = segmentIndex.searchForKey(objectKey);
+        if (offsetInfo.isEmpty()) { return Optional.empty(); }
+        int offset = (int) offsetInfo.get().getOffset();
+
         InputStream ioStream = new FileInputStream(this.segmentPath.toString());
         DatabaseInputStream dbStream = new DatabaseInputStream(ioStream);
 
-        DatabaseRecord record = null;
-
-        Optional<SegmentOffsetInfo> offsetInfo = segmentIndex.searchForKey(objectKey);
-        if (offsetInfo.isPresent()) {
-            int offset = (int) offsetInfo.get().getOffset();
-            if (dbStream.skip(offset) == offset) {
-                Optional<DatabaseRecord> r = dbStream.readDbUnit();
-                if (r.isPresent()) {
-                    record = r.get();
-                }
-            }
+        if (dbStream.skip(offset) != offset) {
+            throw new IOException("Entry has been found corrupted due to invalid index offset.");
         }
 
-        if ((record != null) && record.isValuePresented()) {
-            return Optional.of(record.getValue());
+        Optional<DatabaseRecord> record = dbStream.readDbUnit();
+        if (record.isPresent() && record.get().isValuePresented()) {
+            return Optional.of(record.get().getValue());
         }
 
         return Optional.empty();
@@ -118,24 +127,6 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean delete(String objectKey) throws IOException {
         return this.write(objectKey, null);
-    }
-
-    private String segmentName;
-    private Path segmentPath;
-    private SegmentIndex segmentIndex;
-    private long currentOffset;
-    private DatabaseOutputStream outDbStream = null;
-
-    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
-        this.segmentName = _segmentName;
-        this.segmentPath = _segmentPath;
-        this.segmentIndex = new SegmentIndex();
-        this.currentOffset = 0;
-        this.outDbStream = _outDbStream;
-    }
-
-    private long getOffset() {
-        return this.currentOffset;
     }
 
 }

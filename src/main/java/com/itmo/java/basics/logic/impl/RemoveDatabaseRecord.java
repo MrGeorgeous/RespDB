@@ -1,9 +1,10 @@
 package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.logic.WritableDatabaseRecord;
-import com.itmo.java.basics.logic.io.DatabaseInputStream;
 
 public class RemoveDatabaseRecord implements WritableDatabaseRecord {
+
+    private byte[] key;
 
     @Override
     public byte[] getKey() {
@@ -38,7 +39,5 @@ public class RemoveDatabaseRecord implements WritableDatabaseRecord {
     public RemoveDatabaseRecord(byte[] k) {
         this.key = k;
     }
-
-    private byte[] key;
 
 }
