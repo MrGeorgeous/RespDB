@@ -45,21 +45,21 @@ public class SegmentImpl implements Segment {
             throw new DatabaseException("segmentName parameter is null or empty.");
         }
 
-        if (Files.isDirectory(tableRootPath)) {
-            File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
-            try {
-                if (!segmentFile.exists()) {
-                    Files.createFile(segmentFile.toPath());
-                }
-                OutputStream ioStream = new FileOutputStream(segmentFile.toPath().toAbsolutePath().toString(), true);
-                DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
-                return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath(), outDbStream);
-            } catch (IOException e) {
-                throw new DatabaseException("Segment file could not be created or accessed.", e);
-            }
+        if (!Files.isDirectory(tableRootPath)) {
+            throw new DatabaseException("tableRootPath parameter does not present an existing directory.");
         }
 
-        throw new DatabaseException("tableRootPath parameter does not present an existing directory.");
+        File segmentFile = new File(new File(tableRootPath.toString()), segmentName);
+        try {
+            if (!segmentFile.exists()) {
+                Files.createFile(segmentFile.toPath());
+            }
+            OutputStream ioStream = new FileOutputStream(segmentFile.toPath().toAbsolutePath().toString(), true);
+            DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
+            return new SegmentImpl(segmentName, segmentFile.toPath().toAbsolutePath(), outDbStream);
+        } catch (IOException e) {
+            throw new DatabaseException("Segment file could not be created or accessed.", e);
+        }
 
     }
 
