@@ -23,9 +23,6 @@ public class DatabaseImpl implements Database {
         if ((dbName == null) || (dbName.length() == 0)) {
             throw new DatabaseException("dbName parameter is null or an empty string.");
         }
-        if (!Files.exists(databaseRoot) || !Files.isDirectory(databaseRoot)) {
-            throw new DatabaseException("databaseRoot parameter does not present an existing directory.");
-        }
 
         Path dbPath = databaseRoot.resolve(dbName);
         File f = new File(dbPath.toString());
