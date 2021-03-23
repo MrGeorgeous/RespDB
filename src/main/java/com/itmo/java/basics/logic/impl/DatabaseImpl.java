@@ -26,7 +26,7 @@ public class DatabaseImpl implements Database {
 
         Path dbPath = databaseRoot.resolve(dbName);
         File f = new File(dbPath.toString());
-        if (!f.exists() || !f.mkdir()) {
+        if (!f.exists() && !f.mkdir()) {
             throw new DatabaseException("Database subdirectory could not be accessed or created.");
         }
 
