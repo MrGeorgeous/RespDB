@@ -57,14 +57,14 @@ public class SegmentInitializer implements Initializer {
                     if (context.currentSegmentContext().getIndex() != null) {
                         context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
                     }
-                    if (context.currentTableContext() != null) {
+                    if ((context.currentTableContext() != null) && (context.currentTableContext().getTableIndex() != null)) {
                         context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
                     }
                     offset += record.get().size();
                 }
             }
         } catch (IOException e) {
-            //throw new DatabaseException("Segment was found corrupted while initializing.", e);
+            throw new DatabaseException("Segment was found corrupted while initializing.", e);
         }
 
         if (context.currentTableContext() != null) {
