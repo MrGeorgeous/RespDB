@@ -27,6 +27,10 @@ public class DatabaseServerInitializer implements Initializer {
     @Override
     public void perform(InitializationContext context) throws DatabaseException {
 
+        if (context.executionEnvironment() == null) {
+            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
+        }
+
         File dbsDirectory = new File(context.executionEnvironment().getWorkingPath().toString());
         if (!dbsDirectory.exists() && !dbsDirectory.mkdir()) {
             throw new DatabaseException("Databases directory could not be accessed or created.");

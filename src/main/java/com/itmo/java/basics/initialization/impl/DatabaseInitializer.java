@@ -30,6 +30,14 @@ public class DatabaseInitializer implements Initializer {
     @Override
     public void perform(InitializationContext initialContext) throws DatabaseException {
 
+        if (initialContext.executionEnvironment() == null) {
+            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
+        }
+
+        if (initialContext.currentDbContext() == null) {
+            throw new DatabaseException("currentDbContext is null. Must be initialized.");
+        }
+
         File dbDirectory = new File(initialContext.currentDbContext().getDatabasePath().toString());
         if (!dbDirectory.exists() && !dbDirectory.mkdir()) {
             throw new DatabaseException("Database directory could not be accessed or created.");

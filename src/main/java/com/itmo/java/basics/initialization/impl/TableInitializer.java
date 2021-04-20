@@ -35,6 +35,18 @@ public class TableInitializer implements Initializer {
     @Override
     public void perform(InitializationContext context) throws DatabaseException {
 
+        if (context.executionEnvironment() == null) {
+            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
+        }
+
+        if (context.currentDbContext() == null) {
+            throw new DatabaseException("currentDbContext is null. Must be initialized.");
+        }
+
+        if (context.currentTableContext() == null) {
+            throw new DatabaseException("currentTableContext is null. Must be initialized.");
+        }
+
         String tableName = context.currentTableContext().getTableName();
         File tableDirectory = new File(context.currentTableContext().getTablePath().toString());
 

@@ -12,6 +12,7 @@ import com.itmo.java.basics.logic.impl.SegmentImpl;
 import com.itmo.java.basics.logic.io.DatabaseInputStream;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Optional;
 
 
@@ -27,6 +28,23 @@ public class SegmentInitializer implements Initializer {
      */
     @Override
     public void perform(InitializationContext context) throws DatabaseException {
+
+        if (context.executionEnvironment() == null) {
+            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
+        }
+
+        if (context.currentDbContext() == null) {
+            throw new DatabaseException("currentDbContext is null. Must be initialized.");
+        }
+
+        if (context.currentTableContext() == null) {
+            throw new DatabaseException("currentTableContext is null. Must be initialized.");
+        }
+
+        if (context.currentSegmentContext() == null) {
+            throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
+        }
+
         SegmentImpl segment = (SegmentImpl) SegmentImpl.initializeFromContext(context.currentSegmentContext());
 
         try {
@@ -41,7 +59,7 @@ public class SegmentInitializer implements Initializer {
                     offset += record.get().size();
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new DatabaseException("Segment was found corrupted while initializing.", e);
         }
 
