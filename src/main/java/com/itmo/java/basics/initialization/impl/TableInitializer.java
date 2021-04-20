@@ -71,6 +71,7 @@ public class TableInitializer implements Initializer {
 
         }
 
+        context = segmentContext;
         context.currentDbContext().addTable(TableImpl.initializeFromContext(segmentContext.currentTableContext()));
 
     }

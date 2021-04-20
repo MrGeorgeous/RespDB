@@ -45,7 +45,8 @@ public class DatabaseServerInitializer implements Initializer {
             //context = databaseContext;
         }
 
-        context = new InitializationContextImpl(databaseContext.executionEnvironment(), databaseContext.currentDbContext(), databaseContext.currentTableContext(), databaseContext.currentSegmentContext());
+        context = databaseContext;
+        //context = new InitializationContextImpl(databaseContext.executionEnvironment(), databaseContext.currentDbContext(), databaseContext.currentTableContext(), databaseContext.currentSegmentContext());
 
     }
 }

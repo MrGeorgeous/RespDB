@@ -53,6 +53,7 @@ public class DatabaseInitializer implements Initializer {
             this.subInitializer.perform(tableContext);
         }
 
+        initialContext = tableContext;
         initialContext.executionEnvironment().addDatabase(DatabaseImpl.initializeFromContext(tableContext.currentDbContext()));
 
     }
