@@ -13,6 +13,7 @@ import com.itmo.java.basics.logic.io.DatabaseInputStream;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 
@@ -46,18 +47,19 @@ public class SegmentInitializer implements Initializer {
         }
 
 
-        SegmentImpl segment = (SegmentImpl) SegmentImpl.initializeFromContext(context.currentSegmentContext());
+        Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
+        long offset = 0;
+        long segmentSize = context.currentSegmentContext().getCurrentSize();
 
         try {
-            DatabaseInputStream dbStream = new DatabaseInputStream(new FileInputStream(context.currentSegmentContext().getSegmentPath().toString()));
+            InputStream ioStream = new FileInputStream(context.currentSegmentContext().getSegmentPath().toAbsolutePath().toString());
+            DatabaseInputStream dbStream = new DatabaseInputStream(ioStream);
+
             Optional<DatabaseRecord> record;
-            long offset = 0;
-            while (offset < context.currentSegmentContext().getCurrentSize()) {
+            while (offset < segmentSize) {
                 record = dbStream.readDbUnit();
                 if (record.isPresent() && record.get().isValuePresented()) {
-                    if (context.currentSegmentContext().getIndex() != null) {
-                        context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
-                    }
+                    context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
                     if ((context.currentTableContext() != null) && (context.currentTableContext().getTableIndex() != null)) {
                         context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
                     }
@@ -66,9 +68,12 @@ public class SegmentInitializer implements Initializer {
                     break;
                 }
             }
-        } catch (IOException e) {
-            throw new DatabaseException("Segment was found corrupted while initializing.", e);
+        } catch (Exception e) {
+            if (offset != segmentSize) {
+                throw new DatabaseException("EOF was not reached while initializing segment.", e);
+            }
         }
+
 
         if (context.currentTableContext() != null) {
             context.currentTableContext().updateCurrentSegment(segment);
