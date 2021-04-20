@@ -5,6 +5,7 @@ import com.itmo.java.basics.index.impl.SegmentIndex;
 import com.itmo.java.basics.index.impl.SegmentOffsetInfoImpl;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
+import com.itmo.java.basics.initialization.SegmentInitializationContext;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.DatabaseRecord;
 import com.itmo.java.basics.logic.Segment;
@@ -67,7 +68,10 @@ public class SegmentInitializer implements Initializer {
             try {
                 record = dbStream.readDbUnit();
             } catch (Exception e) {
-                throw new DatabaseException("EOF was not reached while initializing segment.", e);
+                SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
+                context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
+                break;
+                //throw new DatabaseException("EOF was not reached while initializing segment.", e);
             }
             String key = new String(record.get().getKey());
             context.currentSegmentContext().getIndex().onIndexedEntityUpdated(key, new SegmentOffsetInfoImpl(offset));
