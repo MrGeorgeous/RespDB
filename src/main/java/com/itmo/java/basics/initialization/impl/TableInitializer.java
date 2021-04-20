@@ -35,9 +35,9 @@ public class TableInitializer implements Initializer {
     @Override
     public void perform(InitializationContext context) throws DatabaseException {
 
-        if (context.executionEnvironment() == null) {
-            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
-        }
+//        if (context.executionEnvironment() == null) {
+//            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
+//        }
 
         if (context.currentDbContext() == null) {
             throw new DatabaseException("currentDbContext is null. Must be initialized.");
