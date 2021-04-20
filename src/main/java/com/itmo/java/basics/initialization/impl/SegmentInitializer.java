@@ -46,47 +46,54 @@ public class SegmentInitializer implements Initializer {
 //            throw new DatabaseException("currentTableContext is null. Must be initialized.");
 //        }
 
-        if (context.currentSegmentContext() == null) {
-            //throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
-        }
-
-        Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
-        long offset = 0;
-        long segmentSize = 0;
-
-        DatabaseInputStream dbStream;
         try {
-            InputStream ioStream = new FileInputStream(context.currentSegmentContext().getSegmentPath().toAbsolutePath().toString());
-            dbStream = new DatabaseInputStream(ioStream);
-            segmentSize = Files.size(context.currentSegmentContext().getSegmentPath());
-        } catch (Exception e) {
-            throw new DatabaseException("Segment could not be opened to instantiate.", e);
-        }
 
-        Set<String> keys = new HashSet<>();
 
-        Optional<DatabaseRecord> record;
-        while (offset < segmentSize) {
+            if (context.currentSegmentContext() == null) {
+                //throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
+            }
+
+            Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
+            long offset = 0;
+            long segmentSize = 0;
+
+            DatabaseInputStream dbStream;
             try {
-                record = dbStream.readDbUnit();
+                InputStream ioStream = new FileInputStream(context.currentSegmentContext().getSegmentPath().toAbsolutePath().toString());
+                dbStream = new DatabaseInputStream(ioStream);
+                segmentSize = Files.size(context.currentSegmentContext().getSegmentPath());
             } catch (Exception e) {
-                //break;
-                throw new DatabaseException("EOF was not reached while initializing segment.", e);
+                throw new DatabaseException("Segment could not be opened to instantiate.", e);
             }
-            String key = new String(record.get().getKey());
-            context.currentSegmentContext().getIndex().onIndexedEntityUpdated(key, new SegmentOffsetInfoImpl(offset));
-            keys.add(key);
-            offset += record.get().size();
-        }
 
-        SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
-        context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
+            Set<String> keys = new HashSet<>();
 
-        if (context.currentTableContext() != null) {
-            for (String key : keys) {
-                context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
+            Optional<DatabaseRecord> record;
+            while (offset < segmentSize) {
+                try {
+                    record = dbStream.readDbUnit();
+                } catch (Exception e) {
+                    //break;
+                    throw new DatabaseException("EOF was not reached while initializing segment.", e);
+                }
+                String key = new String(record.get().getKey());
+                context.currentSegmentContext().getIndex().onIndexedEntityUpdated(key, new SegmentOffsetInfoImpl(offset));
+                keys.add(key);
+                offset += record.get().size();
             }
-            context.currentTableContext().updateCurrentSegment(segment);
+
+            SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
+            context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
+
+            if (context.currentTableContext() != null) {
+                for (String key : keys) {
+                    context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
+                }
+                context.currentTableContext().updateCurrentSegment(segment);
+            }
+
+        } catch (Exception e) {
+
         }
 
     }
