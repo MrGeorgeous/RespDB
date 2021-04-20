@@ -60,7 +60,8 @@ public class SegmentInitializer implements Initializer {
             dbStream = new DatabaseInputStream(ioStream);
             segmentSize = (int) Files.size(context.currentSegmentContext().getSegmentPath());
         } catch (Exception e) {
-            throw new DatabaseException("Segment could not be opened to instantiate.", e);
+            return;
+            //throw new DatabaseException("Segment could not be opened to instantiate.", e);
         }
 
         Set<String> keys = new HashSet<>();

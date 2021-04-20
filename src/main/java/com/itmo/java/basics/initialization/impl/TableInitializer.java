@@ -1,6 +1,7 @@
 package com.itmo.java.basics.initialization.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
+import com.itmo.java.basics.index.impl.SegmentIndex;
 import com.itmo.java.basics.index.impl.TableIndex;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
@@ -61,7 +62,7 @@ public class TableInitializer implements Initializer {
 
             Path segment = tableDirectory.toPath().resolve(segmentName);
             SegmentInitializationContext subContext = null;
-            subContext = new SegmentInitializationContextImpl(segmentName, tableDirectory.toPath(), 0);
+            subContext = new SegmentInitializationContextImpl(segmentName, tableDirectory.toPath().resolve(segmentName), 0, new SegmentIndex());
             segmentContext = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
             this.subInitializer.perform(segmentContext);
 
