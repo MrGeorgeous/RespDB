@@ -49,7 +49,7 @@ public class DatabaseInitializer implements Initializer {
         Arrays.sort(tables);
         for (String tableName : tables) {
             TableInitializationContext subContext = new TableInitializationContextImpl(tableName, dbDirectory.toPath(), new TableIndex());
-            tableContext = new InitializationContextImpl(initialContext.executionEnvironment(), initialContext.currentDbContext(), subContext, null);
+            tableContext = new InitializationContextImpl(tableContext.executionEnvironment(), tableContext.currentDbContext(), subContext, null);
             this.subInitializer.perform(tableContext);
         }
 

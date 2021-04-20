@@ -46,8 +46,6 @@ public class SegmentInitializer implements Initializer {
 //            throw new DatabaseException("currentTableContext is null. Must be initialized.");
 //        }
 
-        try {
-
 
             if (context.currentSegmentContext() == null) {
                 //throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
@@ -92,9 +90,6 @@ public class SegmentInitializer implements Initializer {
                 context.currentTableContext().updateCurrentSegment(segment);
             }
 
-        } catch (Exception e) {
-
-        }
 
     }
 }

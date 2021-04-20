@@ -55,24 +55,24 @@ public class TableInitializer implements Initializer {
             throw new DatabaseException("Table directory could not be accessed or created.");
         }
 
+        //context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
+
         InitializationContext segmentContext = context;
         String[] segments = tableDirectory.list((current, name) -> new File(current, name).isFile());
         Arrays.sort(segments);
-
-        context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
 
         for (String segmentName : segments) {
 
             Path segment = tableDirectory.toPath().resolve(segmentName);
             SegmentInitializationContext subContext = null;
-            subContext = new SegmentInitializationContextImpl(segmentName, tableDirectory.toPath().resolve(segmentName), 0, new SegmentIndex());
-            segmentContext = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
+            subContext = new SegmentInitializationContextImpl(segmentName, segment, 0, new SegmentIndex());
+            segmentContext = new InitializationContextImpl(segmentContext.executionEnvironment(), segmentContext.currentDbContext(), segmentContext.currentTableContext(), subContext);
             this.subInitializer.perform(segmentContext);
 
         }
 
         context = segmentContext;
-        //context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
+        context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
 
     }
 }

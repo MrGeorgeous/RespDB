@@ -40,7 +40,7 @@ public class DatabaseServerInitializer implements Initializer {
         String[] databases = dbsDirectory.list((current, name) -> new File(current, name).isDirectory());
         for (String databaseName : databases) {
             DatabaseInitializationContext subContext = new DatabaseInitializationContextImpl(databaseName, dbsDirectory.toPath());
-            databaseContext = new InitializationContextImpl(context.executionEnvironment(), subContext, null, null);
+            databaseContext = new InitializationContextImpl(databaseContext.executionEnvironment(), subContext, null, null);
             this.subInitializer.perform(databaseContext);
             //context = databaseContext;
         }
