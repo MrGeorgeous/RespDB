@@ -46,34 +46,31 @@ public class SegmentInitializer implements Initializer {
             //throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
         }
 
-
         Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
         long offset = 0;
         long segmentSize = context.currentSegmentContext().getCurrentSize();
 
+        DatabaseInputStream dbStream;
         try {
             InputStream ioStream = new FileInputStream(context.currentSegmentContext().getSegmentPath().toAbsolutePath().toString());
-            DatabaseInputStream dbStream = new DatabaseInputStream(ioStream);
-
-            Optional<DatabaseRecord> record;
-            while (offset < segmentSize) {
-                record = dbStream.readDbUnit();
-                if (record.isPresent() && record.get().isValuePresented()) {
-                    context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
-                    if ((context.currentTableContext() != null) && (context.currentTableContext().getTableIndex() != null)) {
-                        context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
-                    }
-                    offset += record.get().size();
-                } else {
-                    break;
-                }
-            }
+            dbStream = new DatabaseInputStream(ioStream);
         } catch (Exception e) {
-            if (offset != segmentSize) {
-                throw new DatabaseException("EOF was not reached while initializing segment.", e);
-            }
+            throw new DatabaseException("Segment could not be opened to instantiate.", e);
         }
 
+        Optional<DatabaseRecord> record;
+        while (offset < segmentSize) {
+            try {
+                record = dbStream.readDbUnit();
+            } catch (Exception e) {
+                throw new DatabaseException("EOF was not reached while initializing segment.", e);
+            }
+            context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
+            if ((context.currentTableContext() != null) && (context.currentTableContext().getTableIndex() != null)) {
+                context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
+            }
+            offset += record.get().size();
+        }
 
         if (context.currentTableContext() != null) {
             context.currentTableContext().updateCurrentSegment(segment);

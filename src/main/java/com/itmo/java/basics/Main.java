@@ -20,7 +20,7 @@ public class Main {
 
         try {
 
-            ExecutionEnvironment ctx = new ExecutionEnvironmentImpl(new DatabaseConfig("."));
+            ExecutionEnvironment ctx = new ExecutionEnvironmentImpl(new DatabaseConfig());
             InitializationContext initContext = new InitializationContextImpl(ctx, null, null, null);
             Initializer initializer =
                     new DatabaseServerInitializer(
