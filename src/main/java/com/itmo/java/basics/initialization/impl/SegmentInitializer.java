@@ -14,7 +14,9 @@ import com.itmo.java.basics.logic.io.DatabaseInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 
 public class SegmentInitializer implements Initializer {
@@ -58,6 +60,8 @@ public class SegmentInitializer implements Initializer {
             throw new DatabaseException("Segment could not be opened to instantiate.", e);
         }
 
+        Set<String> keys = new HashSet<>();
+
         Optional<DatabaseRecord> record;
         while (offset < segmentSize) {
             try {
@@ -65,14 +69,16 @@ public class SegmentInitializer implements Initializer {
             } catch (Exception e) {
                 throw new DatabaseException("EOF was not reached while initializing segment.", e);
             }
-            context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
-            if ((context.currentTableContext() != null) && (context.currentTableContext().getTableIndex() != null)) {
-                context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
-            }
+            String key = new String(record.get().getKey());
+            context.currentSegmentContext().getIndex().onIndexedEntityUpdated(key, new SegmentOffsetInfoImpl(offset));
+            keys.add(key);
             offset += record.get().size();
         }
 
         if (context.currentTableContext() != null) {
+            for (String key : keys) {
+                context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
+            }
             context.currentTableContext().updateCurrentSegment(segment);
         }
 
