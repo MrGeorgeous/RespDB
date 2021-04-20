@@ -54,7 +54,9 @@ public class SegmentInitializer implements Initializer {
             while (offset < context.currentSegmentContext().getCurrentSize()) {
                 record = dbStream.readDbUnit();
                 if (record.isPresent() && record.get().isValuePresented()) {
-                    context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
+                    if (context.currentSegmentContext().getIndex() != null) {
+                        context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
+                    }
                     if (context.currentTableContext() != null) {
                         context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
                     }
@@ -62,7 +64,7 @@ public class SegmentInitializer implements Initializer {
                 }
             }
         } catch (IOException e) {
-            throw new DatabaseException("Segment was found corrupted while initializing.", e);
+            //throw new DatabaseException("Segment was found corrupted while initializing.", e);
         }
 
         if (context.currentTableContext() != null) {
