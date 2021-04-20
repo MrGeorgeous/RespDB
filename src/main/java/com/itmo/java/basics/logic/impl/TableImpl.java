@@ -6,6 +6,8 @@ import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.Table;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import java.io.File;
@@ -19,6 +21,32 @@ public class TableImpl implements Table {
     private Path tablePath;
     private TableIndex tableIndex;
     private ArrayList<Segment> segments;
+
+    public static class TableBuilder {
+
+        private String tableName;
+        private Path tablePath;
+        private TableIndex tableIndex;
+        private ArrayList<Segment> segments;
+
+        public TableBuilder(String tableName, Path tablePath, TableIndex tableIndex) {
+            this.tableName = tableName;
+            this.tablePath = tablePath;
+            this.tableIndex = tableIndex;
+            this.segments = new ArrayList<>();
+        }
+
+        public void addSegment(Segment s) {
+            this.segments.add(s);
+        }
+
+        public TableImpl build() throws DatabaseException {
+            TableImpl t = new TableImpl(this.tableName, this.tablePath, this.tableIndex);
+            t.segments.addAll(this.segments);
+            return t;
+        }
+
+    };
 
     private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
         this.tableName = tableName;
@@ -52,7 +80,7 @@ public class TableImpl implements Table {
         if (!Files.exists(tablePath) && !f.mkdir()) {
             throw new DatabaseException("Table directory can not be created.");
         }
-        return new TableImpl(tableName, tablePath, tableIndex);
+        return new CachingTable(new TableImpl(tableName, tablePath, tableIndex));
 
     }
 

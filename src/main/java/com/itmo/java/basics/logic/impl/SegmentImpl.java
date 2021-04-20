@@ -3,6 +3,7 @@ package com.itmo.java.basics.logic.impl;
 import com.itmo.java.basics.index.SegmentOffsetInfo;
 import com.itmo.java.basics.index.impl.SegmentIndex;
 import com.itmo.java.basics.index.impl.SegmentOffsetInfoImpl;
+import com.itmo.java.basics.index.impl.TableIndex;
 import com.itmo.java.basics.logic.DatabaseRecord;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.exceptions.DatabaseException;
@@ -18,8 +19,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 import java.nio.file.Files;
+import java.util.Set;
 
 
 public class SegmentImpl implements Segment {
@@ -31,6 +35,55 @@ public class SegmentImpl implements Segment {
     private SegmentIndex segmentIndex;
     private long currentOffset;
     private DatabaseOutputStream outDbStream = null;
+
+    public static class SegmentBuilder {
+
+        private String segmentName;
+        private Path segmentPath;
+        private SegmentIndex segmentIndex;
+        private long segmentOffset;
+        private Set<String> keys;
+
+        public SegmentBuilder(String segmentName, Path segmentPath, long segmentOffset) {
+            this.segmentName = segmentName;
+            this.segmentPath = segmentPath;
+            this.segmentIndex = new SegmentIndex();
+            this.segmentOffset = segmentOffset;
+            this.keys = new HashSet<>();
+        }
+
+        public void instantiate() throws DatabaseException {
+            try {
+                DatabaseInputStream dbStream = new DatabaseInputStream(new FileInputStream(segmentPath.toString()));
+                Optional<DatabaseRecord> record;
+                long offset = 0;
+                while (offset < this.segmentOffset) {
+                    record = dbStream.readDbUnit();
+                    if (record.isPresent() && record.get().isValuePresented()) {
+                        this.segmentIndex.onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
+                        this.keys.add(new String(record.get().getKey()));
+                        offset += record.get().size();
+                    }
+                }
+            } catch (IOException e) {
+                throw new DatabaseException("Segment has been found invalid or corrupted.", e);
+            }
+        }
+
+        public SegmentImpl build() throws DatabaseException {
+            try {
+                SegmentImpl s = (SegmentImpl) SegmentImpl.create(segmentName, segmentPath.getParent());
+                s.currentOffset = Files.size(segmentPath);
+                s.segmentIndex = this.segmentIndex;
+                return s;
+            } catch (IOException e) {
+                throw new DatabaseException("Segment has been found invalid or corrupted.", e);
+            }
+        }
+
+        public Set<String> getKeys() { return this.keys; }
+
+    }
 
     private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
         this.segmentName = _segmentName;
@@ -44,7 +97,7 @@ public class SegmentImpl implements Segment {
         return this.currentOffset;
     }
 
-    static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
+    public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
         if ((segmentName == null) || (segmentName.length() == 0)) {
             throw new DatabaseException("segmentName parameter is null or empty.");

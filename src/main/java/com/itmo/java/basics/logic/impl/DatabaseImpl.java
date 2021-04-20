@@ -5,6 +5,7 @@ import com.itmo.java.basics.index.impl.TableIndex;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Table;
 
+import javax.xml.crypto.Data;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -17,6 +18,32 @@ public class DatabaseImpl implements Database {
     private String name;
     private Path root;
     private Map<String, Table> tables;
+
+    public static class DatabaseBuilder {
+
+        private String name;
+        private Path root;
+        private Map<String, Table> tables;
+
+        public DatabaseBuilder(String dbName, Path databaseRoot) {
+            this.name = dbName;
+            this.root = databaseRoot;
+            this.tables = new HashMap<>();
+        }
+
+        public void addTable(Table t) {
+            this.tables.put(t.getName(), t);
+        }
+
+        public DatabaseImpl build() throws DatabaseException {
+            DatabaseImpl d = new DatabaseImpl(this.name, this.root);
+            for (Table t : this.tables.values()) {
+                d.tables.put(t.getName(), t);
+            }
+            return d;
+        }
+
+    };
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
 
@@ -68,7 +95,7 @@ public class DatabaseImpl implements Database {
         this.tables.get(tableName).delete(objectKey);
     }
 
-    private DatabaseImpl(String dbName, Path databaseRoot) {
+    public DatabaseImpl(String dbName, Path databaseRoot) {
         this.name = dbName;
         this.root = databaseRoot;
         this.tables = new HashMap<>();
