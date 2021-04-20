@@ -11,6 +11,7 @@ import com.itmo.java.basics.logic.impl.DatabaseImpl;
 import com.itmo.java.basics.logic.impl.TableImpl;
 
 import java.io.File;
+import java.util.Arrays;
 
 public class DatabaseInitializer implements Initializer {
     protected Initializer subInitializer;
@@ -45,6 +46,7 @@ public class DatabaseInitializer implements Initializer {
 
         InitializationContext tableContext = initialContext;
         String[] tables = dbDirectory.list((current, name) -> new File(current, name).isDirectory());
+        Arrays.sort(tables);
         for (String tableName : tables) {
             TableInitializationContext subContext = new TableInitializationContextImpl(tableName, dbDirectory.toPath(), new TableIndex());
             tableContext = new InitializationContextImpl(initialContext.executionEnvironment(), initialContext.currentDbContext(), subContext, null);
