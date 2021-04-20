@@ -38,6 +38,10 @@ public class TableInitializer implements Initializer {
         String tableName = context.currentTableContext().getTableName();
         File tableDirectory = new File(context.currentTableContext().getTablePath().toString());
 
+        if (!tableDirectory.exists() && !tableDirectory.mkdir()) {
+            throw new DatabaseException("Table directory could not be accessed or created.");
+        }
+
         InitializationContext segmentContext = context;
         String[] segments = tableDirectory.list((current, name) -> new File(current, name).isFile());
         Arrays.sort(segments);

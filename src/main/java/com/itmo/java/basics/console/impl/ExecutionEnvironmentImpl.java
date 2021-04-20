@@ -39,7 +39,7 @@ public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
 
     @Override
     public Path getWorkingPath() {
-        return Paths.get(this.configuration.getWorkingPath());
+        return Paths.get(this.configuration.getWorkingPath()).toAbsolutePath();
     }
 
 

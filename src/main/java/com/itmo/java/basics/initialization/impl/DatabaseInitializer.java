@@ -31,6 +31,9 @@ public class DatabaseInitializer implements Initializer {
     public void perform(InitializationContext initialContext) throws DatabaseException {
 
         File dbDirectory = new File(initialContext.currentDbContext().getDatabasePath().toString());
+        if (!dbDirectory.exists() && !dbDirectory.mkdir()) {
+            throw new DatabaseException("Database directory could not be accessed or created.");
+        }
 
         InitializationContext tableContext = initialContext;
         String[] tables = dbDirectory.list((current, name) -> new File(current, name).isDirectory());
