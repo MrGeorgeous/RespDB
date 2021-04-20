@@ -42,8 +42,9 @@ public class SegmentInitializer implements Initializer {
 //        }
 
         if (context.currentSegmentContext() == null) {
-            throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
+            //throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
         }
+
 
         SegmentImpl segment = (SegmentImpl) SegmentImpl.initializeFromContext(context.currentSegmentContext());
 
@@ -61,6 +62,8 @@ public class SegmentInitializer implements Initializer {
                         context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
                     }
                     offset += record.get().size();
+                } else {
+                    break;
                 }
             }
         } catch (IOException e) {
