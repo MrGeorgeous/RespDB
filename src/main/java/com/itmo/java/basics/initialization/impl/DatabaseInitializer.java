@@ -31,7 +31,6 @@ public class DatabaseInitializer implements Initializer {
     public void perform(InitializationContext initialContext) throws DatabaseException {
 
         File dbDirectory = new File(initialContext.currentDbContext().getDatabasePath().toString());
-        DatabaseImpl.DatabaseBuilder d = new DatabaseImpl.DatabaseBuilder(initialContext.currentDbContext().getDbName(), dbDirectory.toPath());
 
         InitializationContext tableContext = initialContext;
         String[] tables = dbDirectory.list((current, name) -> new File(current, name).isDirectory());
@@ -39,12 +38,9 @@ public class DatabaseInitializer implements Initializer {
             TableInitializationContext subContext = new TableInitializationContextImpl(tableName, dbDirectory.toPath(), new TableIndex());
             tableContext = new InitializationContextImpl(initialContext.executionEnvironment(), initialContext.currentDbContext(), subContext, null);
             this.subInitializer.perform(tableContext);
-            for (Table t : tableContext.currentDbContext().getTables().values()) {
-                d.addTable(t);
-            }
         }
 
-        initialContext.executionEnvironment().addDatabase(d.build());
+        initialContext.executionEnvironment().addDatabase(DatabaseImpl.initializeFromContext(tableContext.currentDbContext()));
 
     }
 }

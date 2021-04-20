@@ -2,10 +2,17 @@ package com.itmo.java.basics.initialization.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.SegmentIndex;
+import com.itmo.java.basics.index.impl.SegmentOffsetInfoImpl;
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.Initializer;
+import com.itmo.java.basics.logic.Database;
+import com.itmo.java.basics.logic.DatabaseRecord;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.impl.SegmentImpl;
+import com.itmo.java.basics.logic.io.DatabaseInputStream;
+
+import java.io.FileInputStream;
+import java.util.Optional;
 
 
 public class SegmentInitializer implements Initializer {
@@ -20,12 +27,25 @@ public class SegmentInitializer implements Initializer {
      */
     @Override
     public void perform(InitializationContext context) throws DatabaseException {
-        SegmentImpl.SegmentBuilder s = new SegmentImpl.SegmentBuilder(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), context.currentSegmentContext().getCurrentSize());
-        s.instantiate();
-        Segment segment = s.build();
-        context.currentTableContext().updateCurrentSegment(segment);
-        for (String key : s.getKeys()) {
-            context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
+        SegmentImpl segment = (SegmentImpl) SegmentImpl.initializeFromContext(context.currentSegmentContext());
+
+        try {
+            DatabaseInputStream dbStream = new DatabaseInputStream(new FileInputStream(context.currentSegmentContext().getSegmentPath().toString()));
+            Optional<DatabaseRecord> record;
+            long offset = 0;
+            while (offset < context.currentSegmentContext().getCurrentSize()) {
+                record = dbStream.readDbUnit();
+                if (record.isPresent() && record.get().isValuePresented()) {
+                    context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
+                    context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
+                    offset += record.get().size();
+                }
+            }
+        } catch (Exception e) {
+            throw new DatabaseException("Segment was found corrupted while initializing.", e);
         }
+
+        context.currentTableContext().updateCurrentSegment(segment);
+
     }
 }

@@ -37,12 +37,12 @@ public class TableInitializer implements Initializer {
 
         String tableName = context.currentTableContext().getTableName();
         File tableDirectory = new File(context.currentTableContext().getTablePath().toString());
-        TableImpl.TableBuilder t = new TableImpl.TableBuilder(tableName, tableDirectory.toPath(), context.currentTableContext().getTableIndex());
 
         InitializationContext segmentContext = context;
         String[] segments = tableDirectory.list((current, name) -> new File(current, name).isFile());
         Arrays.sort(segments);
         for (String segmentName : segments) {
+
             Path segment = tableDirectory.toPath().resolve(segmentName);
             SegmentInitializationContext subContext = null;
             try {
@@ -52,12 +52,10 @@ public class TableInitializer implements Initializer {
             }
             segmentContext = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
             this.subInitializer.perform(segmentContext);
-            t.addSegment(segmentContext.currentTableContext().getCurrentSegment());
-
 
         }
 
-        context.currentDbContext().addTable(t.build());
+        context.currentDbContext().addTable(TableImpl.initializeFromContext(segmentContext.currentTableContext()));
 
     }
 }

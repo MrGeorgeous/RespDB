@@ -2,6 +2,7 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.DatabaseInitializationContext;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Table;
 
@@ -19,31 +20,39 @@ public class DatabaseImpl implements Database {
     private Path root;
     private Map<String, Table> tables;
 
-    public static class DatabaseBuilder {
+//    public static class DatabaseBuilder {
+//
+//        private String name;
+//        private Path root;
+//        private Map<String, Table> tables;
+//
+//        public DatabaseBuilder(String dbName, Path databaseRoot) {
+//            this.name = dbName;
+//            this.root = databaseRoot;
+//            this.tables = new HashMap<>();
+//        }
+//
+//        public void addTable(Table t) {
+//            this.tables.put(t.getName(), t);
+//        }
+//
+//        public DatabaseImpl build() throws DatabaseException {
+//            DatabaseImpl d = new DatabaseImpl(this.name, this.root);
+//            for (Table t : this.tables.values()) {
+//                d.tables.put(t.getName(), t);
+//            }
+//            return d;
+//        }
+//
+//    };
 
-        private String name;
-        private Path root;
-        private Map<String, Table> tables;
-
-        public DatabaseBuilder(String dbName, Path databaseRoot) {
-            this.name = dbName;
-            this.root = databaseRoot;
-            this.tables = new HashMap<>();
+    public static Database initializeFromContext(DatabaseInitializationContext context) throws DatabaseException {
+        DatabaseImpl d = (DatabaseImpl) DatabaseImpl.create(context.getDbName(), context.getDatabasePath().getParent());
+        for (Table t : context.getTables().values()) {
+            d.tables.put(t.getName(), t);
         }
-
-        public void addTable(Table t) {
-            this.tables.put(t.getName(), t);
-        }
-
-        public DatabaseImpl build() throws DatabaseException {
-            DatabaseImpl d = new DatabaseImpl(this.name, this.root);
-            for (Table t : this.tables.values()) {
-                d.tables.put(t.getName(), t);
-            }
-            return d;
-        }
-
-    };
+        return d;
+    }
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
 

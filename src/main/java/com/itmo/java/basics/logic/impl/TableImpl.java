@@ -2,6 +2,7 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.TableInitializationContext;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.Table;
 
@@ -22,31 +23,37 @@ public class TableImpl implements Table {
     private TableIndex tableIndex;
     private ArrayList<Segment> segments;
 
-    public static class TableBuilder {
+//    public static class TableBuilder {
+//
+//        private String tableName;
+//        private Path tablePath;
+//        private TableIndex tableIndex;
+//        private ArrayList<Segment> segments;
+//
+//        public TableBuilder(String tableName, Path tablePath, TableIndex tableIndex) {
+//            this.tableName = tableName;
+//            this.tablePath = tablePath;
+//            this.tableIndex = tableIndex;
+//            this.segments = new ArrayList<>();
+//        }
+//
+//        public void addSegment(Segment s) {
+//            this.segments.add(s);
+//        }
+//
+//        public TableImpl build() throws DatabaseException {
+//            TableImpl t = new TableImpl(this.tableName, this.tablePath, this.tableIndex);
+//            t.segments.addAll(this.segments);
+//            return t;
+//        }
+//
+//    };
 
-        private String tableName;
-        private Path tablePath;
-        private TableIndex tableIndex;
-        private ArrayList<Segment> segments;
-
-        public TableBuilder(String tableName, Path tablePath, TableIndex tableIndex) {
-            this.tableName = tableName;
-            this.tablePath = tablePath;
-            this.tableIndex = tableIndex;
-            this.segments = new ArrayList<>();
-        }
-
-        public void addSegment(Segment s) {
-            this.segments.add(s);
-        }
-
-        public TableImpl build() throws DatabaseException {
-            TableImpl t = new TableImpl(this.tableName, this.tablePath, this.tableIndex);
-            t.segments.addAll(this.segments);
-            return t;
-        }
-
-    };
+    public static Table initializeFromContext(TableInitializationContext context) {
+        TableImpl t = new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex());
+        t.segments.add(context.getCurrentSegment());
+        return t;
+    }
 
     private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
         this.tableName = tableName;
