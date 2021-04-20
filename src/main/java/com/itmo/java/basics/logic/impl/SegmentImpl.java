@@ -37,11 +37,15 @@ public class SegmentImpl implements Segment {
     private long currentOffset;
     private DatabaseOutputStream outDbStream = null;
 
-    public static Segment initializeFromContext(SegmentInitializationContext context) throws DatabaseException {
-        SegmentImpl s = (SegmentImpl) SegmentImpl.create(context.getSegmentName(), context.getSegmentPath().getParent());
-        s.segmentIndex = context.getIndex();
-        s.currentOffset = context.getCurrentSize();
-        return s;
+    public static Segment initializeFromContext(SegmentInitializationContext context) {
+        try {
+            SegmentImpl s = (SegmentImpl) SegmentImpl.create(context.getSegmentName(), context.getSegmentPath().getParent());
+            s.segmentIndex = context.getIndex();
+            s.currentOffset = context.getCurrentSize();
+            return s;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {

@@ -46,12 +46,16 @@ public class DatabaseImpl implements Database {
 //
 //    };
 
-    public static Database initializeFromContext(DatabaseInitializationContext context) throws DatabaseException {
-        DatabaseImpl d = (DatabaseImpl) DatabaseImpl.create(context.getDbName(), context.getDatabasePath().getParent());
-        for (Table t : context.getTables().values()) {
-            d.tables.put(t.getName(), t);
+    public static Database initializeFromContext(DatabaseInitializationContext context) {
+        try {
+            DatabaseImpl d = (DatabaseImpl) DatabaseImpl.create(context.getDbName(), context.getDatabasePath().getParent());
+            for (Table t : context.getTables().values()) {
+                d.tables.put(t.getName(), t);
+            }
+            return d;
+        } catch (Exception e) {
+            return null;
         }
-        return d;
     }
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {

@@ -50,9 +50,13 @@ public class TableImpl implements Table {
 //    };
 
     public static Table initializeFromContext(TableInitializationContext context) {
-        TableImpl t = new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex());
-        t.segments.add(context.getCurrentSegment());
-        return t;
+        try {
+            TableImpl t = new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex());
+            t.segments.add(context.getCurrentSegment());
+            return new CachingTable(t);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
@@ -72,7 +76,7 @@ public class TableImpl implements Table {
         }
     }
 
-    static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
+    public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
 
         if ((tableName == null) || (tableName.length() == 0)) {
             throw new DatabaseException("tableName parameter is null or empty.");
