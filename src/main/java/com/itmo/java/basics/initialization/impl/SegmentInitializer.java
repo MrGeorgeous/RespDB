@@ -46,7 +46,7 @@ public class SegmentInitializer implements Initializer {
 //            throw new DatabaseException("currentTableContext is null. Must be initialized.");
 //        }
 
-
+            throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
             if (context.currentSegmentContext() == null) {
                 //throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
             }
