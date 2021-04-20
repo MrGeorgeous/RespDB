@@ -44,17 +44,16 @@ public class DatabaseInitializer implements Initializer {
             throw new DatabaseException("Database directory could not be accessed or created.");
         }
 
-        InitializationContext tableContext = initialContext;
+        //InitializationContext tableContext = initialContext;
         String[] tables = dbDirectory.list((current, name) -> new File(current, name).isDirectory());
         Arrays.sort(tables);
         for (String tableName : tables) {
             TableInitializationContext subContext = new TableInitializationContextImpl(tableName, dbDirectory.toPath(), new TableIndex());
-            tableContext = new InitializationContextImpl(tableContext.executionEnvironment(), tableContext.currentDbContext(), subContext, null);
-            this.subInitializer.perform(tableContext);
+            initialContext = new InitializationContextImpl(initialContext.executionEnvironment(), initialContext.currentDbContext(), subContext, null);
+            this.subInitializer.perform(initialContext);
         }
 
-        initialContext = tableContext;
-        initialContext.executionEnvironment().addDatabase(DatabaseImpl.initializeFromContext(tableContext.currentDbContext()));
+        initialContext.executionEnvironment().addDatabase(DatabaseImpl.initializeFromContext(initialContext.currentDbContext()));
 
     }
 }
