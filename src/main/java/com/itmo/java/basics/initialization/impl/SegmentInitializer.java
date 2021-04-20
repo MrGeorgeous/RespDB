@@ -37,9 +37,9 @@ public class SegmentInitializer implements Initializer {
 //            throw new DatabaseException("currentDbContext is null. Must be initialized.");
 //        }
 
-        if (context.currentTableContext() == null) {
-            throw new DatabaseException("currentTableContext is null. Must be initialized.");
-        }
+//        if (context.currentTableContext() == null) {
+//            throw new DatabaseException("currentTableContext is null. Must be initialized.");
+//        }
 
         if (context.currentSegmentContext() == null) {
             throw new DatabaseException("currentSegmentContext is null. Must be initialized.");
@@ -55,7 +55,9 @@ public class SegmentInitializer implements Initializer {
                 record = dbStream.readDbUnit();
                 if (record.isPresent() && record.get().isValuePresented()) {
                     context.currentSegmentContext().getIndex().onIndexedEntityUpdated(new String(record.get().getKey()), new SegmentOffsetInfoImpl(offset));
-                    context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
+                    if (context.currentTableContext() != null) {
+                        context.currentTableContext().getTableIndex().onIndexedEntityUpdated(new String(record.get().getKey()), segment);
+                    }
                     offset += record.get().size();
                 }
             }
@@ -63,7 +65,9 @@ public class SegmentInitializer implements Initializer {
             throw new DatabaseException("Segment was found corrupted while initializing.", e);
         }
 
-        context.currentTableContext().updateCurrentSegment(segment);
+        if (context.currentTableContext() != null) {
+            context.currentTableContext().updateCurrentSegment(segment);
+        }
 
     }
 }
