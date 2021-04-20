@@ -61,11 +61,7 @@ public class TableInitializer implements Initializer {
 
             Path segment = tableDirectory.toPath().resolve(segmentName);
             SegmentInitializationContext subContext = null;
-            try {
-                subContext = new SegmentInitializationContextImpl(segmentName, tableDirectory.toPath(), (int) Files.size(segment));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            subContext = new SegmentInitializationContextImpl(segmentName, tableDirectory.toPath(), 0);
             segmentContext = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
             this.subInitializer.perform(segmentContext);
 

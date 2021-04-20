@@ -15,6 +15,7 @@ import com.itmo.java.basics.logic.io.DatabaseInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -51,12 +52,13 @@ public class SegmentInitializer implements Initializer {
 
         Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
         long offset = 0;
-        long segmentSize = context.currentSegmentContext().getCurrentSize();
+        long segmentSize = 0;
 
         DatabaseInputStream dbStream;
         try {
             InputStream ioStream = new FileInputStream(context.currentSegmentContext().getSegmentPath().toAbsolutePath().toString());
             dbStream = new DatabaseInputStream(ioStream);
+            segmentSize = (int) Files.size(context.currentSegmentContext().getSegmentPath());
         } catch (Exception e) {
             throw new DatabaseException("Segment could not be opened to instantiate.", e);
         }
