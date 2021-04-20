@@ -60,7 +60,7 @@ public class SegmentInitializer implements Initializer {
                 }
             }
         } catch (IOException e) {
-            throw new DatabaseException("Segment was found corrupted while initializing.", e);
+            //throw new DatabaseException("Segment was found corrupted while initializing.", e);
         }
 
         context.currentTableContext().updateCurrentSegment(segment);
