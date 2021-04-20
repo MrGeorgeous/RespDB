@@ -68,8 +68,6 @@ public class SegmentInitializer implements Initializer {
             try {
                 record = dbStream.readDbUnit();
             } catch (Exception e) {
-                SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
-                context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
                 break;
                 //throw new DatabaseException("EOF was not reached while initializing segment.", e);
             }
@@ -78,6 +76,9 @@ public class SegmentInitializer implements Initializer {
             keys.add(key);
             offset += record.get().size();
         }
+
+        SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
+        context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
 
         if (context.currentTableContext() != null) {
             for (String key : keys) {
