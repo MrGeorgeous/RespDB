@@ -57,7 +57,7 @@ public class TableInitializer implements Initializer {
 
         //context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
 
-        InitializationContext segmentContext = context;
+        InitializationContext segmentContext = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), null);;
         String[] segments = tableDirectory.list((current, name) -> new File(current, name).isFile());
         Arrays.sort(segments);
 
@@ -71,7 +71,7 @@ public class TableInitializer implements Initializer {
 
         }
 
-        //context = segmentContext;
+        context = new InitializationContextImpl(segmentContext.executionEnvironment(), segmentContext.currentDbContext(), segmentContext.currentTableContext(), segmentContext.currentSegmentContext());
         context.currentDbContext().addTable(TableImpl.initializeFromContext(segmentContext.currentTableContext()));
 
     }
