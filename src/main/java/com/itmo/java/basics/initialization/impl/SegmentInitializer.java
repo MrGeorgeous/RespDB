@@ -79,12 +79,12 @@ public class SegmentInitializer implements Initializer {
                 offset += record.get().size();
             }
 
-            Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
-
             SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
             context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
 
-            if (context.currentTableContext() != null) {
+            Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
+
+           if (context.currentTableContext() != null) {
                 for (String key : keys) {
                     context.currentTableContext().getTableIndex().onIndexedEntityUpdated(key, segment);
                 }
