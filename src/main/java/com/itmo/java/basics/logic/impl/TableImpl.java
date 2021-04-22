@@ -23,57 +23,10 @@ public class TableImpl implements Table {
     private TableIndex tableIndex;
     private ArrayList<Segment> segments;
 
-//    public static class TableBuilder {
-//
-//        private String tableName;
-//        private Path tablePath;
-//        private TableIndex tableIndex;
-//        private ArrayList<Segment> segments;
-//
-//        public TableBuilder(String tableName, Path tablePath, TableIndex tableIndex) {
-//            this.tableName = tableName;
-//            this.tablePath = tablePath;
-//            this.tableIndex = tableIndex;
-//            this.segments = new ArrayList<>();
-//        }
-//
-//        public void addSegment(Segment s) {
-//            this.segments.add(s);
-//        }
-//
-//        public TableImpl build() throws DatabaseException {
-//            TableImpl t = new TableImpl(this.tableName, this.tablePath, this.tableIndex);
-//            t.segments.addAll(this.segments);
-//            return t;
-//        }
-//
-//    };
-
     public static Table initializeFromContext(TableInitializationContext context) {
-        try {
-            TableImpl t = new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex());
-            t.segments.add(context.getCurrentSegment());
-            return new CachingTable(t);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
-        this.tableName = tableName;
-        this.tablePath = tablePath;
-        this.tableIndex = tableIndex;
-        this.segments = new ArrayList<>();
-    }
-
-    private void addNewSegment() throws DatabaseException {
-        segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
-    }
-
-    private void validateKey(String objectKey) throws DatabaseException {
-        if ((objectKey == null) || (objectKey.length() == 0)) {
-            throw new DatabaseException("objectKey parameter is null or empty.");
-        }
+        TableImpl t = new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex());
+        t.segments.add(context.getCurrentSegment());
+        return new CachingTable(t);
     }
 
     public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
@@ -114,7 +67,7 @@ public class TableImpl implements Table {
                 this.addNewSegment();
                 if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
                     throw new DatabaseException("Writing to new segment after overflow has failed unexpectedly.");
-                };
+                }
             }
             tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
         } catch (IOException e) {
@@ -147,5 +100,22 @@ public class TableImpl implements Table {
         this.write(objectKey, null);
     }
 
+
+    private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
+        this.tableName = tableName;
+        this.tablePath = tablePath;
+        this.tableIndex = tableIndex;
+        this.segments = new ArrayList<>();
+    }
+
+    private void addNewSegment() throws DatabaseException {
+        segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
+    }
+
+    private void validateKey(String objectKey) throws DatabaseException {
+        if ((objectKey == null) || (objectKey.length() == 0)) {
+            throw new DatabaseException("objectKey parameter is null or empty.");
+        }
+    }
 
 }

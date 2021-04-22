@@ -37,4 +37,5 @@ public class DatabaseCacheImpl implements DatabaseCache {
     public void delete(String key) {
         this.pairs.remove(key);
     }
+
 }

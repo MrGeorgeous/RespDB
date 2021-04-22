@@ -18,28 +18,28 @@ public class Main {
 
     public static void main(String[] args) {
 
-        try {
-
-            ExecutionEnvironment ctx = new ExecutionEnvironmentImpl(new DatabaseConfig());
-            InitializationContext initContext = new InitializationContextImpl(ctx, null, null, null);
-            Initializer initializer =
-                    new DatabaseServerInitializer(
-                            new DatabaseInitializer(
-                                    new TableInitializer(
-                                            new SegmentInitializer())));
-
-            initializer.perform(initContext);
-
-            Database d = initContext.executionEnvironment().getDatabase("test_db").get();
-
-            System.out.println(new String(d.read("table1", "a").get()));
-            for (int i = 0; i < 16000; i++) {
-                d.write("table1", "a", ("" + i).getBytes());
-            }
-
-        } catch (DatabaseException e) {
-            e.printStackTrace();
-        }
+//        try {
+//
+//            ExecutionEnvironment ctx = new ExecutionEnvironmentImpl(new DatabaseConfig());
+//            InitializationContext initContext = new InitializationContextImpl(ctx, null, null, null);
+//            Initializer initializer =
+//                    new DatabaseServerInitializer(
+//                            new DatabaseInitializer(
+//                                    new TableInitializer(
+//                                            new SegmentInitializer())));
+//
+//            initializer.perform(initContext);
+//
+//            Database d = initContext.executionEnvironment().getDatabase("test_db").get();
+//
+//            System.out.println(new String(d.read("table1", "a").get()));
+//            for (int i = 0; i < 16000; i++) {
+//                d.write("table1", "a", ("" + i).getBytes());
+//            }
+//
+//        } catch (DatabaseException e) {
+//            e.printStackTrace();
+//        }
 
 //        try {
 

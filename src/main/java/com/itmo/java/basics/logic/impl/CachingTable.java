@@ -11,8 +11,8 @@ public class CachingTable implements Table {
     protected Table table;
     protected DatabaseCache cache;
 
-    public CachingTable(Table t) {
-        this.table = t;
+    public CachingTable(Table table) {
+        this.table = table;
         this.cache = new DatabaseCacheImpl();
     }
 

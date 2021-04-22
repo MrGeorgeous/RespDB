@@ -42,6 +42,4 @@ public class ExecutionEnvironmentImpl implements ExecutionEnvironment {
         return Paths.get(this.configuration.getWorkingPath());
     }
 
-
-
 }

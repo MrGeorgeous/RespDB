@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseInitializationContextImpl implements DatabaseInitializationContext {
+
     protected String databaseName;
     protected Path databaseRoot;
     protected Map<String, Table> tables;

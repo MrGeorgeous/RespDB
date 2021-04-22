@@ -20,32 +20,6 @@ public class DatabaseImpl implements Database {
     private Path root;
     private Map<String, Table> tables;
 
-//    public static class DatabaseBuilder {
-//
-//        private String name;
-//        private Path root;
-//        private Map<String, Table> tables;
-//
-//        public DatabaseBuilder(String dbName, Path databaseRoot) {
-//            this.name = dbName;
-//            this.root = databaseRoot;
-//            this.tables = new HashMap<>();
-//        }
-//
-//        public void addTable(Table t) {
-//            this.tables.put(t.getName(), t);
-//        }
-//
-//        public DatabaseImpl build() throws DatabaseException {
-//            DatabaseImpl d = new DatabaseImpl(this.name, this.root);
-//            for (Table t : this.tables.values()) {
-//                d.tables.put(t.getName(), t);
-//            }
-//            return d;
-//        }
-//
-//    };
-
     public static Database initializeFromContext(DatabaseInitializationContext context) {
         try {
             DatabaseImpl d = (DatabaseImpl) DatabaseImpl.create(context.getDbName(), context.getDatabasePath().getParent());

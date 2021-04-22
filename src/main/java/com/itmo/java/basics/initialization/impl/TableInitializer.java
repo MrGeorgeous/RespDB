@@ -36,10 +36,6 @@ public class TableInitializer implements Initializer {
     @Override
     public void perform(InitializationContext context) throws DatabaseException {
 
-//        if (context.executionEnvironment() == null) {
-//            throw new DatabaseException("executionEnvironment is null. Must be initialized.");
-//        }
-
         if (context.currentDbContext() == null) {
             throw new DatabaseException("currentDbContext is null. Must be initialized.");
         }
@@ -48,30 +44,23 @@ public class TableInitializer implements Initializer {
             throw new DatabaseException("currentTableContext is null. Must be initialized.");
         }
 
-        String tableName = context.currentTableContext().getTableName();
         File tableDirectory = new File(context.currentTableContext().getTablePath().toString());
-
         if (!tableDirectory.exists() && !tableDirectory.mkdir()) {
             throw new DatabaseException("Table directory could not be accessed or created.");
         }
 
-        //context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
-
-        //InitializationContext segmentContext = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), null);;
         String[] segments = tableDirectory.list((current, name) -> new File(current, name).isFile());
         Arrays.sort(segments);
 
         for (String segmentName : segments) {
-
             Path segment = tableDirectory.toPath().resolve(segmentName);
-            SegmentInitializationContext subContext = null;
-            subContext = new SegmentInitializationContextImpl(segmentName, segment, 0, new SegmentIndex());
+            SegmentInitializationContext subContext = new SegmentInitializationContextImpl(segmentName, segment, 0, new SegmentIndex());
             context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
             this.subInitializer.perform(context);
-
         }
 
         context.currentDbContext().addTable(TableImpl.initializeFromContext(context.currentTableContext()));
 
     }
+
 }

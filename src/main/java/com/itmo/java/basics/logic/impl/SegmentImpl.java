@@ -35,7 +35,7 @@ public class SegmentImpl implements Segment {
     private Path segmentPath;
     private SegmentIndex segmentIndex;
     private long currentOffset;
-    private DatabaseOutputStream outDbStream = null;
+    private DatabaseOutputStream outDbStream;
 
     public static Segment initializeFromContext(SegmentInitializationContext context) {
         try {
@@ -43,21 +43,9 @@ public class SegmentImpl implements Segment {
             s.segmentIndex = context.getIndex();
             s.currentOffset = context.getCurrentSize();
             return s;
-        } catch (Exception e) {
+        } catch (DatabaseException e) {
             return null;
         }
-    }
-
-    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
-        this.segmentName = _segmentName;
-        this.segmentPath = _segmentPath;
-        this.segmentIndex = new SegmentIndex();
-        this.currentOffset = 0;
-        this.outDbStream = _outDbStream;
-    }
-
-    private long getOffset() {
-        return this.currentOffset;
     }
 
     public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
@@ -84,7 +72,7 @@ public class SegmentImpl implements Segment {
 
     }
 
-    static String createSegmentName(String tableName) {
+    public static String createSegmentName(String tableName) {
         return tableName + "_" + System.currentTimeMillis();
     }
 
@@ -148,6 +136,18 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean delete(String objectKey) throws IOException {
         return this.write(objectKey, null);
+    }
+
+    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
+        this.segmentName = _segmentName;
+        this.segmentPath = _segmentPath;
+        this.segmentIndex = new SegmentIndex();
+        this.currentOffset = 0;
+        this.outDbStream = _outDbStream;
+    }
+
+    private long getOffset() {
+        return this.currentOffset;
     }
 
 }
