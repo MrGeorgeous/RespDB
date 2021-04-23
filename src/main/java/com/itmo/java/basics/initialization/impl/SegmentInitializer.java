@@ -63,7 +63,12 @@ public class SegmentInitializer implements Initializer {
             keys.add(key);
         }
 
-        SegmentInitializationContext subContext = new SegmentInitializationContextImpl(context.currentSegmentContext().getSegmentName(), context.currentSegmentContext().getSegmentPath(), (int) offset, context.currentSegmentContext().getIndex());
+        SegmentInitializationContext subContext = new SegmentInitializationContextImpl(
+                context.currentSegmentContext().getSegmentName(),
+                context.currentSegmentContext().getSegmentPath(),
+                (int) offset,
+                context.currentSegmentContext().getIndex()
+        );
         context = new InitializationContextImpl(context.executionEnvironment(), context.currentDbContext(), context.currentTableContext(), subContext);
 
         Segment segment = SegmentImpl.initializeFromContext(context.currentSegmentContext());
