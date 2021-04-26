@@ -39,11 +39,13 @@ public class SegmentImpl implements Segment {
 
     public static Segment initializeFromContext(SegmentInitializationContext context) {
         try {
-            SegmentImpl s = (SegmentImpl) SegmentImpl.create(context.getSegmentName(), context.getSegmentPath().getParent());
+            OutputStream ioStream = new FileOutputStream(context.getSegmentPath().toString(), true);
+            DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
+            SegmentImpl s = new SegmentImpl(context.getSegmentName(), context.getSegmentPath().getParent(), outDbStream);
             s.segmentIndex = context.getIndex();
             s.currentOffset = context.getCurrentSize();
             return s;
-        } catch (DatabaseException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -138,12 +140,12 @@ public class SegmentImpl implements Segment {
         return this.write(objectKey, null);
     }
 
-    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
-        this.segmentName = _segmentName;
-        this.segmentPath = _segmentPath;
+    private SegmentImpl(String segmentName, Path segmentPath, DatabaseOutputStream outDbStream) {
+        this.segmentName = segmentName;
+        this.segmentPath = segmentPath;
         this.segmentIndex = new SegmentIndex();
         this.currentOffset = 0;
-        this.outDbStream = _outDbStream;
+        this.outDbStream = outDbStream;
     }
 
     private long getOffset() {

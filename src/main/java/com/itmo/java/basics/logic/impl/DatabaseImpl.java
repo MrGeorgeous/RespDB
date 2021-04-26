@@ -21,15 +21,11 @@ public class DatabaseImpl implements Database {
     private Map<String, Table> tables;
 
     public static Database initializeFromContext(DatabaseInitializationContext context) {
-        try {
-            DatabaseImpl d = (DatabaseImpl) DatabaseImpl.create(context.getDbName(), context.getDatabasePath().getParent());
-            for (Table t : context.getTables().values()) {
-                d.tables.put(t.getName(), t);
-            }
-            return d;
-        } catch (Exception e) {
-            return null;
+        DatabaseImpl d = new DatabaseImpl(context.getDbName(), context.getDatabasePath().getParent());
+        for (Table t : context.getTables().values()) {
+            d.tables.put(t.getName(), t);
         }
+        return d;
     }
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {

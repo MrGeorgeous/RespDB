@@ -45,11 +45,10 @@ public class DatabaseInitializer implements Initializer {
         }
 
         String[] tables = dbDirectory.list((current, name) -> new File(current, name).isDirectory());
-        Arrays.sort(tables);
         for (String tableName : tables) {
             TableInitializationContext subContext = new TableInitializationContextImpl(tableName, dbDirectory.toPath(), new TableIndex());
             initialContext = new InitializationContextImpl(initialContext.executionEnvironment(), initialContext.currentDbContext(), subContext, null);
-            this.subInitializer.perform(initialContext);
+            subInitializer.perform(initialContext);
         }
 
         initialContext.executionEnvironment().addDatabase(DatabaseImpl.initializeFromContext(initialContext.currentDbContext()));

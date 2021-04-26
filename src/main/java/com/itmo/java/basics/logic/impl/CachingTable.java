@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public class CachingTable implements Table {
 
-    protected Table table;
-    protected DatabaseCache cache;
+    private Table table;
+    private DatabaseCache cache;
 
     public CachingTable(Table table) {
         this.table = table;

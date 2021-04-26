@@ -38,29 +38,23 @@ public class SegmentInitializer implements Initializer {
         }
 
         long offset = 0;
-        long segmentSize;
+        Set<String> keys = new HashSet<>();
 
-        DatabaseInputStream dbStream;
         try {
             InputStream ioStream = new FileInputStream(context.currentSegmentContext().getSegmentPath().toAbsolutePath().toString());
-            dbStream = new DatabaseInputStream(ioStream);
-            segmentSize = Files.size(context.currentSegmentContext().getSegmentPath());
-        } catch (Exception e) {
-            throw new DatabaseException("Segment could not be opened to instantiate.", e);
-        }
+            DatabaseInputStream dbStream = new DatabaseInputStream(ioStream);
+            long segmentSize = Files.size(context.currentSegmentContext().getSegmentPath());
 
-        Set<String> keys = new HashSet<>();
-        DatabaseRecord record;
-        while (offset < segmentSize) {
-            try {
+            DatabaseRecord record;
+            while (offset < segmentSize) {
                 record = dbStream.readDbUnit().get();
-            } catch (Exception e) {
-                throw new DatabaseException("EOF was not reached while initializing segment.", e);
+                String key = new String(record.getKey());
+                context.currentSegmentContext().getIndex().onIndexedEntityUpdated(key, new SegmentOffsetInfoImpl(offset));
+                offset += record.size();
+                keys.add(key);
             }
-            String key = new String(record.getKey());
-            context.currentSegmentContext().getIndex().onIndexedEntityUpdated(key, new SegmentOffsetInfoImpl(offset));
-            offset += record.size();
-            keys.add(key);
+        } catch (Exception e) {
+            throw new DatabaseException("Segment could not be instantiated.", e);
         }
 
         SegmentInitializationContext subContext = new SegmentInitializationContextImpl(
