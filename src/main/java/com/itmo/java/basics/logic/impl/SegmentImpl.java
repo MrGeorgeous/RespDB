@@ -39,15 +39,24 @@ public class SegmentImpl implements Segment {
 
     public static Segment initializeFromContext(SegmentInitializationContext context) {
         try {
-            OutputStream ioStream = new FileOutputStream(context.getSegmentPath().toString(), true);
-            DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
-            SegmentImpl s = new SegmentImpl(context.getSegmentName(), context.getSegmentPath().getParent(), outDbStream);
+            SegmentImpl s = (SegmentImpl) SegmentImpl.create(context.getSegmentName(), context.getSegmentPath().getParent());
             s.segmentIndex = context.getIndex();
             s.currentOffset = context.getCurrentSize();
             return s;
-        } catch (Exception e) {
+        } catch (DatabaseException e) {
             return null;
         }
+
+//        try {
+//            OutputStream ioStream = new FileOutputStream(context.getSegmentPath().toString(), true);
+//            DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
+//            SegmentImpl s = new SegmentImpl(context.getSegmentName(), context.getSegmentPath().getParent(), outDbStream);
+//            s.segmentIndex = context.getIndex();
+//            s.currentOffset = context.getCurrentSize();
+//            return s;
+//        } catch (Exception e) {
+//            return null;
+//        }
     }
 
     public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
