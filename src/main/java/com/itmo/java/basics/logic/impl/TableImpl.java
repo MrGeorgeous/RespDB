@@ -2,10 +2,13 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.TableInitializationContext;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.logic.Table;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import java.io.File;
@@ -20,24 +23,13 @@ public class TableImpl implements Table {
     private TableIndex tableIndex;
     private ArrayList<Segment> segments;
 
-    private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
-        this.tableName = tableName;
-        this.tablePath = tablePath;
-        this.tableIndex = tableIndex;
-        this.segments = new ArrayList<>();
+    public static Table initializeFromContext(TableInitializationContext context) {
+        TableImpl t = new TableImpl(context.getTableName(), context.getTablePath(), context.getTableIndex());
+        t.segments.add(context.getCurrentSegment());
+        return new CachingTable(t);
     }
 
-    private void addNewSegment() throws DatabaseException {
-        segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
-    }
-
-    private void validateKey(String objectKey) throws DatabaseException {
-        if ((objectKey == null) || (objectKey.length() == 0)) {
-            throw new DatabaseException("objectKey parameter is null or empty.");
-        }
-    }
-
-    static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
+    public static Table create(String tableName, Path pathToDatabaseRoot, TableIndex tableIndex) throws DatabaseException {
 
         if ((tableName == null) || (tableName.length() == 0)) {
             throw new DatabaseException("tableName parameter is null or empty.");
@@ -52,7 +44,7 @@ public class TableImpl implements Table {
         if (!Files.exists(tablePath) && !f.mkdir()) {
             throw new DatabaseException("Table directory can not be created.");
         }
-        return new TableImpl(tableName, tablePath, tableIndex);
+        return new CachingTable(new TableImpl(tableName, tablePath, tableIndex));
 
     }
 
@@ -75,7 +67,7 @@ public class TableImpl implements Table {
                 this.addNewSegment();
                 if (!segments.get(segments.size() - 1).write(objectKey, objectValue)) {
                     throw new DatabaseException("Writing to new segment after overflow has failed unexpectedly.");
-                };
+                }
             }
             tableIndex.onIndexedEntityUpdated(objectKey, segments.get(segments.size() - 1));
         } catch (IOException e) {
@@ -108,5 +100,22 @@ public class TableImpl implements Table {
         this.write(objectKey, null);
     }
 
+
+    private TableImpl(String tableName, Path tablePath, TableIndex tableIndex) {
+        this.tableName = tableName;
+        this.tablePath = tablePath;
+        this.tableIndex = tableIndex;
+        this.segments = new ArrayList<>();
+    }
+
+    private void addNewSegment() throws DatabaseException {
+        segments.add(SegmentImpl.create(SegmentImpl.createSegmentName(this.tableName), this.tablePath));
+    }
+
+    private void validateKey(String objectKey) throws DatabaseException {
+        if ((objectKey == null) || (objectKey.length() == 0)) {
+            throw new DatabaseException("objectKey parameter is null or empty.");
+        }
+    }
 
 }

@@ -2,9 +2,11 @@ package com.itmo.java.basics.logic.impl;
 
 import com.itmo.java.basics.exceptions.DatabaseException;
 import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.DatabaseInitializationContext;
 import com.itmo.java.basics.logic.Database;
 import com.itmo.java.basics.logic.Table;
 
+import javax.xml.crypto.Data;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -17,6 +19,14 @@ public class DatabaseImpl implements Database {
     private String name;
     private Path root;
     private Map<String, Table> tables;
+
+    public static Database initializeFromContext(DatabaseInitializationContext context) {
+        DatabaseImpl d = new DatabaseImpl(context.getDbName(), context.getDatabasePath());
+        for (Table t : context.getTables().values()) {
+            d.tables.put(t.getName(), t);
+        }
+        return d;
+    }
 
     public static Database create(String dbName, Path databaseRoot) throws DatabaseException {
 
@@ -68,7 +78,7 @@ public class DatabaseImpl implements Database {
         this.tables.get(tableName).delete(objectKey);
     }
 
-    private DatabaseImpl(String dbName, Path databaseRoot) {
+    public DatabaseImpl(String dbName, Path databaseRoot) {
         this.name = dbName;
         this.root = databaseRoot;
         this.tables = new HashMap<>();

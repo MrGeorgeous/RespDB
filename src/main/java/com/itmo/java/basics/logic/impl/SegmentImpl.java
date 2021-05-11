@@ -3,6 +3,8 @@ package com.itmo.java.basics.logic.impl;
 import com.itmo.java.basics.index.SegmentOffsetInfo;
 import com.itmo.java.basics.index.impl.SegmentIndex;
 import com.itmo.java.basics.index.impl.SegmentOffsetInfoImpl;
+import com.itmo.java.basics.index.impl.TableIndex;
+import com.itmo.java.basics.initialization.SegmentInitializationContext;
 import com.itmo.java.basics.logic.DatabaseRecord;
 import com.itmo.java.basics.logic.Segment;
 import com.itmo.java.basics.exceptions.DatabaseException;
@@ -18,8 +20,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 import java.nio.file.Files;
+import java.util.Set;
 
 
 public class SegmentImpl implements Segment {
@@ -30,21 +35,22 @@ public class SegmentImpl implements Segment {
     private Path segmentPath;
     private SegmentIndex segmentIndex;
     private long currentOffset;
-    private DatabaseOutputStream outDbStream = null;
+    private DatabaseOutputStream outDbStream;
 
-    private SegmentImpl(String _segmentName, Path _segmentPath, DatabaseOutputStream _outDbStream) {
-        this.segmentName = _segmentName;
-        this.segmentPath = _segmentPath;
-        this.segmentIndex = new SegmentIndex();
-        this.currentOffset = 0;
-        this.outDbStream = _outDbStream;
+    public static Segment initializeFromContext(SegmentInitializationContext context) {
+        try {
+            OutputStream ioStream = new FileOutputStream(context.getSegmentPath().toString(), true);
+            DatabaseOutputStream outDbStream = new DatabaseOutputStream(ioStream);
+            SegmentImpl s = new SegmentImpl(context.getSegmentName(), context.getSegmentPath(), outDbStream);
+            s.segmentIndex = context.getIndex();
+            s.currentOffset = context.getCurrentSize();
+            return s;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
-    private long getOffset() {
-        return this.currentOffset;
-    }
-
-    static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
+    public static Segment create(String segmentName, Path tableRootPath) throws DatabaseException {
 
         if ((segmentName == null) || (segmentName.length() == 0)) {
             throw new DatabaseException("segmentName parameter is null or empty.");
@@ -68,7 +74,7 @@ public class SegmentImpl implements Segment {
 
     }
 
-    static String createSegmentName(String tableName) {
+    public static String createSegmentName(String tableName) {
         return tableName + "_" + System.currentTimeMillis();
     }
 
@@ -132,6 +138,18 @@ public class SegmentImpl implements Segment {
     @Override
     public boolean delete(String objectKey) throws IOException {
         return this.write(objectKey, null);
+    }
+
+    private SegmentImpl(String segmentName, Path segmentPath, DatabaseOutputStream outDbStream) {
+        this.segmentName = segmentName;
+        this.segmentPath = segmentPath;
+        this.segmentIndex = new SegmentIndex();
+        this.currentOffset = 0;
+        this.outDbStream = outDbStream;
+    }
+
+    private long getOffset() {
+        return this.currentOffset;
     }
 
 }
