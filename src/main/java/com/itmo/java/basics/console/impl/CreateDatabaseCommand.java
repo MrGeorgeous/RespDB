@@ -1,6 +1,9 @@
 package com.itmo.java.basics.console.impl;
 
-import com.itmo.java.basics.console.*;
+import com.itmo.java.basics.console.DatabaseCommand;
+import com.itmo.java.basics.console.DatabaseCommandArgPositions;
+import com.itmo.java.basics.console.DatabaseCommandResult;
+import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.logic.DatabaseFactory;
 import com.itmo.java.protocol.model.RespObject;
 

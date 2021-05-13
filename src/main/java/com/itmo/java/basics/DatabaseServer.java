@@ -1,7 +1,12 @@
 package com.itmo.java.basics;
 
-import com.itmo.java.basics.console.*;
+import com.itmo.java.basics.console.DatabaseCommand;
+import com.itmo.java.basics.console.DatabaseCommands;
+import com.itmo.java.basics.console.DatabaseCommandArgPositions;
+import com.itmo.java.basics.console.DatabaseCommandResult;
+import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.exceptions.DatabaseException;
+
 import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.InitializationContextImpl;

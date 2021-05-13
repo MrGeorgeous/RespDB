@@ -1,6 +1,10 @@
 package com.itmo.java.basics.console;
 
-import com.itmo.java.basics.console.impl.*;
+import com.itmo.java.basics.console.impl.CreateDatabaseCommand;
+import com.itmo.java.basics.console.impl.CreateTableCommand;
+import com.itmo.java.basics.console.impl.SetKeyCommand;
+import com.itmo.java.basics.console.impl.GetKeyCommand;
+import com.itmo.java.basics.console.impl.DeleteKeyCommand;
 import com.itmo.java.basics.logic.impl.DatabaseImpl;
 import com.itmo.java.basics.logic.impl.TableImpl;
 import com.itmo.java.protocol.model.RespObject;
