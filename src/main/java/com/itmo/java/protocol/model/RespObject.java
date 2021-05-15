@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Представляет собой объект в RESP
+ * Преставляет собой объект в RESP
  */
 public interface RespObject {
 

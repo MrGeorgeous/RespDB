@@ -9,8 +9,14 @@ import com.itmo.java.protocol.model.RespObject;
  */
 public class FailedDatabaseCommandResult implements DatabaseCommandResult {
 
+    private byte[] message;
+
     public FailedDatabaseCommandResult(String payload) {
-        //TODO implement
+        if (payload == null) {
+            this.message = null;
+        } else {
+            this.message = payload.getBytes();
+        }
     }
 
     /**
@@ -18,8 +24,11 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public String getPayLoad() {
-        //TODO implement
-        return null;
+        if (this.message == null) {
+            return null;
+        } else {
+            return new String(message);
+        }
     }
 
     @Override
@@ -32,7 +41,6 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public RespObject serialize() {
-        //TODO implement
-        return null;
+        return new RespError(message);
     }
 }

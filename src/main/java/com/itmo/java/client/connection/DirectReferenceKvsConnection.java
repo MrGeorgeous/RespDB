@@ -6,19 +6,23 @@ import com.itmo.java.protocol.model.RespArray;
 import com.itmo.java.protocol.model.RespObject;
 
 /**
- * Реализация подключения, когда есть прямая ссылка на объект
+ * Реализация коннекшена, когда есть прямая ссылка на объект
  * (пока еще нет реализации сокетов)
  */
 public class DirectReferenceKvsConnection implements KvsConnection {
 
+    private DatabaseServer databaseServer;
+
     public DirectReferenceKvsConnection(DatabaseServer databaseServer) {
-        //TODO implement
+        this.databaseServer = databaseServer;
     }
 
     @Override
     public RespObject send(int commandId, RespArray command) throws ConnectionException {
-        //TODO implement
-        return null;
+        if (databaseServer == null) {
+            throw new ConnectionException("Direct connection failed due to null server value.", null);
+        }
+        return databaseServer.executeNextCommand(command).join().serialize();
     }
 
     /**

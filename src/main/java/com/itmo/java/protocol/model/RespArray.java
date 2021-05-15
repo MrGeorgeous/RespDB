@@ -1,7 +1,10 @@
 package com.itmo.java.protocol.model;
 
 import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,8 +17,11 @@ public class RespArray implements RespObject {
      */
     public static final byte CODE = '*';
 
+    private List<RespObject> objects;
+
     public RespArray(RespObject... objects) {
-        //TODO implement
+        this.objects = new ArrayList<>();
+        this.objects.addAll(Arrays.asList(objects));
     }
 
     /**
@@ -35,17 +41,27 @@ public class RespArray implements RespObject {
      */
     @Override
     public String asString() {
-        //TODO implement
-        return null;
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            String header = (char)CODE + String.valueOf(objects.size()) + "\r\n";
+            stream.write(header.getBytes());
+            for (RespObject obj : objects) {
+                obj.write(stream);
+            }
+            return new String(stream.toByteArray());
+        } catch (Exception e){
+            // it must be impossible
+            return (char)CODE + "0\r\n";
+        }
     }
 
     @Override
     public void write(OutputStream os) throws IOException {
-        //TODO implement
+        os.write(asString().getBytes());
     }
 
     public List<RespObject> getObjects() {
-        //TODO implement
-        return null;
+        return this.objects;
     }
+
 }

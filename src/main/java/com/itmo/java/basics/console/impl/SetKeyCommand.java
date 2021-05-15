@@ -4,14 +4,20 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
+import com.itmo.java.basics.logic.Database;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.util.List;
+import java.util.Optional;
+
 
 /**
  * Команда для создания записи значения
  */
 public class SetKeyCommand implements DatabaseCommand {
+
+    private ExecutionEnvironment environment;
+    private List<RespObject> commandArgs;
 
     /**
      * Создает команду.
@@ -24,7 +30,11 @@ public class SetKeyCommand implements DatabaseCommand {
      * @throws IllegalArgumentException если передано неправильное количество аргументов
      */
     public SetKeyCommand(ExecutionEnvironment env, List<RespObject> commandArgs) {
-        //TODO implement
+        this.environment = env;
+        this.commandArgs = commandArgs;
+        if ((this.environment == null) || (this.commandArgs == null) || (this.commandArgs.size() != 6)) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -34,7 +44,25 @@ public class SetKeyCommand implements DatabaseCommand {
      */
     @Override
     public DatabaseCommandResult execute() {
-        //TODO implement
-        return null;
+        try {
+            String dbName = this.commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
+            String tableName = this.commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString();
+            String key = this.commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString();
+            String value = this.commandArgs.get(DatabaseCommandArgPositions.VALUE.getPositionIndex()).asString();
+            Optional<Database> db = environment.getDatabase(dbName);
+            if (db.isPresent()) {
+                Optional<byte[]> currentValue = db.get().read(tableName, key);
+                db.get().write(tableName, key, value.getBytes());
+                if (currentValue.isPresent()) {
+                    return new SuccessDatabaseCommandResult(currentValue.get());
+                } else {
+                    return new SuccessDatabaseCommandResult(null);
+                }
+            } else {
+                return new FailedDatabaseCommandResult("Database '" + dbName + "' does not exist.");
+            }
+        } catch (Exception e) {
+            return new FailedDatabaseCommandResult("Table or key to write has not been found. Stacktrace: " + e.getMessage());
+        }
     }
 }

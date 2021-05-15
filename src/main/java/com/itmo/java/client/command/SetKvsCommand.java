@@ -8,8 +8,18 @@ public class SetKvsCommand implements KvsCommand {
 
     private static final String COMMAND_NAME = "SET_KEY";
 
+    private Integer commandId;
+    private String databaseName;
+    private String tableName;
+    private String key;
+    private String value;
+
     public SetKvsCommand(String databaseName, String tableName, String key, String value) {
-        //TODO implement
+        this.commandId = idGen.getAndIncrement();
+        this.databaseName = databaseName;
+        this.tableName = tableName;
+        this.key = key;
+        this.value = value;
     }
 
     /**
@@ -19,13 +29,17 @@ public class SetKvsCommand implements KvsCommand {
      */
     @Override
     public RespArray serialize() {
-        //TODO implement
-        return null;
+        RespCommandId rCommandId = new RespCommandId(getCommandId());
+        RespBulkString rCommandName = new RespBulkString(COMMAND_NAME.getBytes());
+        RespBulkString rDatabaseName = new RespBulkString(databaseName.getBytes());
+        RespBulkString rTableName = new RespBulkString(tableName.getBytes());
+        RespBulkString rKey = new RespBulkString(key.getBytes());
+        RespBulkString rValue = new RespBulkString(value.getBytes());
+        return new RespArray(rCommandId, rCommandName, rDatabaseName, rTableName, rKey, rValue);
     }
 
     @Override
     public int getCommandId() {
-        //TODO implement
-        return 0;
+        return this.commandId;
     }
 }

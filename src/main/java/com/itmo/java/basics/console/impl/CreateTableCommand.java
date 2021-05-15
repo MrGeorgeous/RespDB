@@ -4,14 +4,19 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
+import com.itmo.java.basics.logic.Database;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Команда для создания базы таблицы
  */
 public class CreateTableCommand implements DatabaseCommand {
+
+    private ExecutionEnvironment environment;
+    private List<RespObject> commandArgs;
 
     /**
      * Создает команду
@@ -24,7 +29,11 @@ public class CreateTableCommand implements DatabaseCommand {
      * @throws IllegalArgumentException если передано неправильное количество аргументов
      */
     public CreateTableCommand(ExecutionEnvironment env, List<RespObject> commandArgs) {
-        //TODO implement
+        this.environment = env;
+        this.commandArgs = commandArgs;
+        if ((this.environment == null) || (this.commandArgs == null) || (this.commandArgs.size() != 4)) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -34,7 +43,18 @@ public class CreateTableCommand implements DatabaseCommand {
      */
     @Override
     public DatabaseCommandResult execute() {
-        //TODO implement
-        return null;
+        try {
+            String dbName = this.commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
+            String tableName = this.commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString();
+            Optional<Database> db = environment.getDatabase(dbName);
+            if (db.isPresent()) {
+                db.get().createTableIfNotExists(tableName);
+            } else {
+                return new FailedDatabaseCommandResult("Database '" + dbName + "' does not exist.");
+            }
+            return new SuccessDatabaseCommandResult(("Table '" + tableName + "' has been created.").getBytes());
+        } catch (Exception e) {
+            return new FailedDatabaseCommandResult("Table has not been created. Stacktrace: " + e.getMessage());
+        }
     }
 }

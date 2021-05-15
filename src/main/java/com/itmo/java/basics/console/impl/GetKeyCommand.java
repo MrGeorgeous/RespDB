@@ -4,14 +4,19 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
+import com.itmo.java.basics.logic.Database;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Команда для чтения данных по ключу
  */
 public class GetKeyCommand implements DatabaseCommand {
+
+    private ExecutionEnvironment environment;
+    private List<RespObject> commandArgs;
 
     /**
      * Создает команду.
@@ -24,7 +29,11 @@ public class GetKeyCommand implements DatabaseCommand {
      * @throws IllegalArgumentException если передано неправильное количество аргументов
      */
     public GetKeyCommand(ExecutionEnvironment env, List<RespObject> commandArgs) {
-        //TODO implement
+        this.environment = env;
+        this.commandArgs = commandArgs;
+        if ((this.environment == null) || (this.commandArgs == null) || (this.commandArgs.size() != 5)) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -34,7 +43,23 @@ public class GetKeyCommand implements DatabaseCommand {
      */
     @Override
     public DatabaseCommandResult execute() {
-        //TODO implement
-        return null;
+        try {
+            String dbName = this.commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
+            String tableName = this.commandArgs.get(DatabaseCommandArgPositions.TABLE_NAME.getPositionIndex()).asString();
+            String key = this.commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString();
+            Optional<Database> db = environment.getDatabase(dbName);
+            if (db.isPresent()) {
+                Optional<byte[]> value = db.get().read(tableName, key);
+                if (value.isPresent()) {
+                    return new SuccessDatabaseCommandResult(value.get());
+                } else {
+                    return new FailedDatabaseCommandResult("Key '" + key + "' has not been found.");
+                }
+            } else {
+                return new FailedDatabaseCommandResult("Database '" + dbName + "' does not exist.");
+            }
+        } catch (Exception e) {
+            return new FailedDatabaseCommandResult("Table or key to read has not been found. Stacktrace: " + e.getMessage());
+        }
     }
 }

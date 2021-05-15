@@ -1,10 +1,15 @@
 package com.itmo.java.basics;
 
 import com.itmo.java.basics.console.DatabaseCommand;
+import com.itmo.java.basics.console.DatabaseCommands;
+import com.itmo.java.basics.console.DatabaseCommandArgPositions;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.exceptions.DatabaseException;
+
+import com.itmo.java.basics.initialization.InitializationContext;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
+import com.itmo.java.basics.initialization.impl.InitializationContextImpl;
 import com.itmo.java.protocol.model.RespArray;
 
 import java.util.concurrent.CompletableFuture;
@@ -15,27 +20,32 @@ public class DatabaseServer {
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+    private ExecutionEnvironment environment;
+
     /**
-     * Конструктор
+     * Constructor
      *
-     * @param env         env для инициализации. Далее работа происходит с заполненным объектом
+     * @param env         env для инициализации. Далее работа происходит с заполненым объектом
      * @param initializer готовый чейн инициализации
      * @throws DatabaseException если произошла ошибка инициализации
      */
     public static DatabaseServer initialize(ExecutionEnvironment env, DatabaseServerInitializer initializer) throws DatabaseException {
-        //TODO implement
-        return null;
+        InitializationContext initContext = new InitializationContextImpl(env, null, null, null);
+        initializer.perform(initContext);
+        return new DatabaseServer(initContext.executionEnvironment());
     }
 
     public CompletableFuture<DatabaseCommandResult> executeNextCommand(RespArray message) {
-        return CompletableFuture.supplyAsync(() -> {
-            // code here...
-            return null;
-        }, executorService);
+        String commandName = message.getObjects().get(DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString();
+        DatabaseCommand command = DatabaseCommands.valueOf(commandName).getCommand(environment, message.getObjects());
+        return executeNextCommand(command);
     }
 
     public CompletableFuture<DatabaseCommandResult> executeNextCommand(DatabaseCommand command) {
-        //TODO implement
-        return null;
+        return CompletableFuture.supplyAsync(command::execute, executorService);
+    }
+
+    private DatabaseServer(ExecutionEnvironment env) {
+        this.environment = env;
     }
 }

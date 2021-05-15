@@ -11,7 +11,7 @@ public interface DatabaseCommandResult extends DatabaseApiSerializable {
      * @return успешный результат выполнения команды, который был сформирован
      */
     static DatabaseCommandResult success(byte[] result) {
-        //TODO implement
+        // TODO implement
         return null;
     }
 
@@ -28,7 +28,7 @@ public interface DatabaseCommandResult extends DatabaseApiSerializable {
 
     /**
      * Формирует результат команды, при выполнении которой произошла ошибка.
-     * Берется сообщение из исключения. Если в исключении нет сообщения - стэктрейс
+     * Берется сообщение из исключения. Если в исключении нет сообщения - стэктрейст
      *
      * @param exception исключение, из которого нужно сформировать результат выполнения команды
      * @return результат команды, при выполнении которой произошла ошибка

@@ -14,6 +14,10 @@ import java.util.List;
  */
 public class CreateDatabaseCommand implements DatabaseCommand {
 
+    private ExecutionEnvironment environment;
+    private DatabaseFactory factory;
+    private List<RespObject> commandArgs;
+
     /**
      * Создает команду.
      * <br/>
@@ -26,7 +30,12 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      * @throws IllegalArgumentException если передано неправильное количество аргументов
      */
     public CreateDatabaseCommand(ExecutionEnvironment env, DatabaseFactory factory, List<RespObject> commandArgs) {
-        //TODO implement
+        this.environment = env;
+        this.factory = factory;
+        this.commandArgs = commandArgs;
+        if ((this.environment == null) || (this.factory == null) || (this.commandArgs == null) || (this.commandArgs.size() != 3)) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -36,7 +45,12 @@ public class CreateDatabaseCommand implements DatabaseCommand {
      */
     @Override
     public DatabaseCommandResult execute() {
-        //TODO implement
-        return null;
+        try {
+            String dbName = this.commandArgs.get(DatabaseCommandArgPositions.DATABASE_NAME.getPositionIndex()).asString();
+            environment.addDatabase(factory.createNonExistent(dbName, environment.getWorkingPath()));
+            return new SuccessDatabaseCommandResult(("Database '" + dbName + "' has been created.").getBytes());
+        } catch (Exception e) {
+            return new FailedDatabaseCommandResult("Database has not been created. Stacktrace: " + e.getMessage());
+        }
     }
 }
