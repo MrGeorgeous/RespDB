@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.itmo.java.basics</groupId>
-    <artifactId>lab3</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <artifactId>lab4</artifactId>
+    <version>4.0-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
