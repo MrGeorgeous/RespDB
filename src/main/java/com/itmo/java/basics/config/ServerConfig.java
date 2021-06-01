@@ -15,4 +15,5 @@ public class ServerConfig {
 
     private final String host;
     private final int port;
+
 }
