@@ -11,6 +11,7 @@ import java.util.Properties;
 public class ConfigLoader {
 
     private String configPath;
+    private InputStream inStream = null;
 
     /**
      * По умолчанию читает из server.properties
@@ -37,9 +38,9 @@ public class ConfigLoader {
 
         Properties properties = new Properties();
         try {
-            InputStream stream = getClass().getResourceAsStream(configPath);
-            properties.load(stream);
-            stream.close();
+            inStream = getClass().getResourceAsStream(configPath);
+            properties.load(inStream);
+            inStream.close();
         } catch (IOException e) {
             // ignoring non-existent configuration file
         }
