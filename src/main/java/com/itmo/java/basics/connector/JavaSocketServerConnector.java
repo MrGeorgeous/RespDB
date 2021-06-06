@@ -1,7 +1,9 @@
 package com.itmo.java.basics.connector;
 
 import com.itmo.java.basics.DatabaseServer;
+import com.itmo.java.basics.config.ConfigLoader;
 import com.itmo.java.basics.config.DatabaseConfig;
+import com.itmo.java.basics.config.DatabaseServerConfig;
 import com.itmo.java.basics.config.ServerConfig;
 import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.console.impl.ExecutionEnvironmentImpl;
@@ -81,14 +83,16 @@ public class JavaSocketServerConnector implements Closeable {
 
     public static void main(String[] args) throws Exception {
 
-        DatabaseConfig dbConfig = new DatabaseConfig();
-        ExecutionEnvironment env = new ExecutionEnvironmentImpl(dbConfig);
+        ConfigLoader configLoader = new ConfigLoader();
+        DatabaseServerConfig config = configLoader.readConfig();
+        ExecutionEnvironment env = new ExecutionEnvironmentImpl(config.getDbConfig());
         DatabaseServerInitializer initializer = new DatabaseServerInitializer(
                                                         new DatabaseInitializer(
                                                                 new TableInitializer(
                                                                         new SegmentInitializer())));
         DatabaseServer dbServer = DatabaseServer.initialize(env, initializer);
-        JavaSocketServerConnector server = new JavaSocketServerConnector(dbServer, new ServerConfig("localhost", 8080));
+
+        JavaSocketServerConnector server = new JavaSocketServerConnector(dbServer, config.getServerConfig());
         server.start();
 
     }

@@ -2,8 +2,11 @@ package com.itmo.java.basics.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Properties;
+
 
 /**
  * Класс, отвечающий за подгрузку данных из конфигурационного файла формата .properties
@@ -11,13 +14,13 @@ import java.util.Properties;
 public class ConfigLoader {
 
     private String configPath;
-    private InputStream inStream = null;
 
     /**
      * По умолчанию читает из server.properties
      */
     public ConfigLoader() {
         this.configPath = "server.properties";
+        //this.configPath = Paths.get("server.properties").toAbsolutePath().toString();
     }
 
     /**
@@ -38,10 +41,10 @@ public class ConfigLoader {
 
         Properties properties = new Properties();
         try {
-            inStream = getClass().getResourceAsStream(configPath);
-            properties.load(inStream);
-            inStream.close();
-        } catch (IOException e) {
+            InputStream stream = this.getClass().getResourceAsStream(configPath);
+            properties.load(stream);
+            stream.close();
+        } catch (Exception e) {
             // ignoring non-existent configuration file
         }
 

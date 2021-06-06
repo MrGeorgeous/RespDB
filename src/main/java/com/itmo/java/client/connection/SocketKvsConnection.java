@@ -34,7 +34,15 @@ public class SocketKvsConnection implements KvsConnection {
     @Override
     public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
         try {
-            lazyInitializer();
+            if ((this.socket == null) || (!this.socket.isConnected())) {
+                this.socket = new Socket(config.getHost(), config.getPort());
+                requester = new PrintWriter(socket.getOutputStream(), true);
+                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            }
+        } catch (Exception e) {
+            throw new ConnectionException("Connection socket could not be opened.", e);
+        }
+        try {
             RespWriter rw = new RespWriter(socket.getOutputStream());
             rw.write(command);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -50,7 +58,7 @@ public class SocketKvsConnection implements KvsConnection {
             while (socket.getInputStream().available() == 0);
             RespReader rr = new RespReader(socket.getInputStream());
             return rr.readObject();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ConnectionException("Connection was not established or lost.", e);
         }
     }
@@ -73,22 +81,5 @@ public class SocketKvsConnection implements KvsConnection {
         } catch (Exception ignored) {}
     }
 
-    private void lazyInitializer() throws IOException {
-//        if (config.getHost() == null) {
-//            throw new IllegalArgumentException("Empty host to connect.");
-//        }
-//        if (config.getPort() == null) {
-//            throw new IllegalArgumentException("Empty port to connect.");
-//        }
-        try {
-            if ((this.socket == null) || (!this.socket.isConnected())) {
-                this.socket = new Socket(config.getHost(), config.getPort());
-                requester = new PrintWriter(socket.getOutputStream(), true);
-                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            }
-        } catch (Exception e) {
-            throw new IOException("Connection socket could not be opened.", e);
-        }
-    }
 
 }
