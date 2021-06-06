@@ -19,7 +19,8 @@ public class ConfigLoader {
      * По умолчанию читает из server.properties
      */
     public ConfigLoader() {
-        this.configPath = Paths.get("server.properties").toAbsolutePath().toString();
+        this.configPath = "server.properties";
+        //this.configPath = Paths.get("server.properties").toAbsolutePath().toString();
     }
 
     /**
@@ -40,7 +41,7 @@ public class ConfigLoader {
 
         Properties properties = new Properties();
         try {
-            InputStream stream = this.getClass().getResourceAsStream(configPath);
+            InputStream stream = this.getClass().getClassLoader().getResourceAsStream(configPath);
             properties.load(stream);
             stream.close();
         } catch (Exception e) {
