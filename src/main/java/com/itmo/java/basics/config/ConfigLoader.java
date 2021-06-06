@@ -41,7 +41,7 @@ public class ConfigLoader {
 
         Properties properties = new Properties();
         try {
-            InputStream stream = this.getClass().getResourceAsStream(configPath);
+            InputStream stream = this.getClass().getResourceAsStream(Paths.get(configPath).toAbsolutePath().toString());
             properties.load(stream);
             stream.close();
         } catch (Exception e) {
