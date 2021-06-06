@@ -121,25 +121,32 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
+            CommandReader reader = null;
+            RespWriter writer = null;
             try {
-                RespReader rr = new RespReader(clientSocket.getInputStream());
-                RespWriter rw = new RespWriter(clientSocket.getOutputStream());
-
+                reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnvironment());
+                writer = new RespWriter(clientSocket.getOutputStream());
                 while (clientSocket.isConnected()) {
-                    if (rr.hasArray()) {
-                        RespArray command = rr.readArray();
-                        RespObject result = server.executeNextCommand(command).join().serialize();
+                    if (reader.hasNextCommand()) {
+                        RespObject result = server.executeNextCommand(reader.readCommand()).join().serialize();
                         result.write(System.out);
-                        rw.write(result);
+                        writer.write(result);
                     }
                 }
-                rr.close();
-                rw.close();
-                //close();
             } catch (Exception ignored) {
                 ignored.printStackTrace();
                 System.out.println("Failed to process request.");
             }
+//            try {
+//                if (reader != null) {
+//                    reader.close();
+//                }
+//                if (writer != null) {
+//                    writer.close();
+//                }
+//            } catch (Exception e) {
+//
+//            }
         }
 
         /**
@@ -149,7 +156,7 @@ public class JavaSocketServerConnector implements Closeable {
         public void close() {
             try {
                 clientSocket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("Client socket was not closed.");
             }
         }

@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
 
 public class RespReader implements AutoCloseable {
 
-    private Scanner scanner;
+    private InputStream stream;
+    private byte buffer = 0;
 
     /**
      * Специальные символы окончания элемента
@@ -24,16 +25,18 @@ public class RespReader implements AutoCloseable {
     private static String CRLF = String.valueOf((char)CR) + String.valueOf((char)LF);
 
     public RespReader(InputStream is) {
-        this.scanner = new Scanner(is);
-        this.scanner.useDelimiter("");
-        System.out.println(CRLF);
+        this.stream = is;
     }
 
     /**
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-        return scanner.hasNext();
+        if (end()) {
+            return false;
+        }
+        byte r = getNextByte();
+        return r == RespArray.CODE;
     }
 
     /**
@@ -45,50 +48,28 @@ public class RespReader implements AutoCloseable {
      */
     public RespObject readObject() throws IOException {
 
-
-        if (!scanner.hasNext()) {
+        if (end()) {
             throw new EOFException("Empty InputStream.");
         }
 
         try {
 
-//            System.out.println("lol");
-//            String allt = new String(scanner.nextLine());
-//            System.out.print(allt);
-//            System.out.print("000");
-            char code = readCode();
+            char code = (char)getNextByte();
 
             if (code == RespCommandId.CODE) {
-                int commandId = readInt();
-                skipCRLF();
-                //int commandId = ByteBuffer.wrap(stream.readNBytes(4)).getInt();
-                return new RespCommandId(commandId);
+                return readCommandId();
             }
 
             if (code == RespError.CODE) {
-                return new RespError(readUntilCRLF());
+               return readError();
             }
 
             if (code == RespBulkString.CODE) {
-                int len = readIntToCRLF();
-                if (len == -1) {
-                    return new RespBulkString(null);
-                }
-                byte[] str = readNBytes(len);
-                skipCRLF();
-                assert(str.length == len);
-                //byte[] str = stream.readNBytes(len);
-                return new RespBulkString(str);
+               return readBulkString();
             }
 
             if (code == RespArray.CODE) {
-                int len = readIntToCRLF();
-                skipCRLF();
-                ArrayList<RespObject> items = new ArrayList<>();
-                for (int i = 0; i < len; i++) {
-                    items.add(readObject());
-                }
-                return new RespArray(items.toArray(new RespObject[len]));
+               return readArray();
             }
 
         } catch (IOException e) {
@@ -138,9 +119,7 @@ public class RespReader implements AutoCloseable {
     public RespArray readArray() throws IOException {
         char code = readCode();
         int len = readIntToCRLF();
-        System.out.println("a");
         //skipCRLF();
-        System.out.println("b");
         ArrayList<RespObject> items = new ArrayList<>();
         for (int i = 0; i < len; i++) {
             items.add(readObject());
@@ -165,11 +144,11 @@ public class RespReader implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-       scanner.close();
+       stream.close();
     }
 
     private char readCode() throws IOException {
-        return (char) scanner.next().getBytes()[0];
+        return (char)readNextByte();
 //        char r = scanner.next(".").charAt(0);
 //        scanner.useDelimiter("");
 //        return r;
@@ -182,24 +161,24 @@ public class RespReader implements AutoCloseable {
     private byte[] readNBytes(int N) throws IOException {
         byte[] n = new byte[N];
         for (int i = 0; i < N; i++) {
-            n[i] = scanner.next().getBytes()[0];
+            n[i] = readNextByte();
         }
         return n;
     }
 
     private void skipCRLF() throws IOException {
         for (int i = 0; i < CRLF.getBytes().length; i++) {
-            scanner.next();
+           System.out.print((char)readNextByte());
             //System.out.print(scanner.nextByte());
         }
     }
 
     private byte[] readUntilCRLF() throws IOException {
-        byte t = scanner.next().getBytes()[0];
+        byte t = readNextByte();
         List<Byte> bytes = new ArrayList<Byte>();
-        while ((t != LF) && (scanner.hasNext())) {
+        while ((t != LF) && !end()) {
             bytes.add(t);
-            t = scanner.next().getBytes()[0];
+            t = readNextByte();
         }
         byte[] b = new byte[bytes.size() - 1];
         for (int i = 0; i < bytes.size() - 1; i++) {
@@ -212,5 +191,29 @@ public class RespReader implements AutoCloseable {
         return Integer.parseInt(new String(readUntilCRLF()));
         //return ByteBuffer.wrap(readUntilCRLF()).getInt();
     }
+
+    private byte getNextByte() throws IOException {
+        if (buffer == 0) {
+            buffer = readNextByte();
+        }
+        return buffer;
+    }
+
+    private byte readNextByte() throws IOException {
+        if (buffer != 0) {
+            byte r = buffer;
+            buffer = 0;
+            return r;
+        }
+        byte r = stream.readNBytes(1)[0];
+        return r;
+    }
+
+    private boolean end() throws IOException {
+        return stream.available() == 0;
+    }
+
+
+
 
 }

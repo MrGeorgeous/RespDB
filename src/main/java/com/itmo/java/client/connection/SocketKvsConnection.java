@@ -38,12 +38,15 @@ public class SocketKvsConnection implements KvsConnection {
             rw.write(command);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+//            while(in.a)
 //            String result = "";
 //            String k;
 //            while ((k = in.readLine()) != null) {
 //                result += k + "\r\n";
 //            }
-            //RespReader rr = new RespReader(new ByteArrayInputStream(result.getBytes()));
+//            RespReader rr = new RespReader(new ByteArrayInputStream(result.getBytes()));
+
+            while (socket.getInputStream().available() == 0);
             RespReader rr = new RespReader(socket.getInputStream());
             return rr.readObject();
         } catch (IOException e) {

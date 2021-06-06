@@ -45,6 +45,10 @@ public class DatabaseServer {
         return CompletableFuture.supplyAsync(command::execute, executorService);
     }
 
+    public ExecutionEnvironment getEnvironment() {
+        return this.environment;
+    }
+
     private DatabaseServer(ExecutionEnvironment env) {
         this.environment = env;
     }

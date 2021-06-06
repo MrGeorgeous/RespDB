@@ -10,13 +10,13 @@ import java.util.Properties;
  */
 public class ConfigLoader {
 
-    private String configPath = "server.properties";
+    private String configPath;
 
     /**
      * По умолчанию читает из server.properties
      */
     public ConfigLoader() {
-        //TODO implement
+        this.configPath = "server.properties";
     }
 
     /**
