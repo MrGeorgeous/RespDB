@@ -87,7 +87,7 @@ public class SocketKvsConnection implements KvsConnection {
                 responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             }
         } catch (Exception e) {
-            throw new ConnectionException("Connection socket could not be opened.", e);
+            throw new IOException("Connection socket could not be opened.", e);
         }
     }
 
