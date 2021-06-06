@@ -7,6 +7,7 @@ import com.itmo.java.protocol.model.RespArray;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.stream.Collectors;
 
@@ -73,16 +74,20 @@ public class SocketKvsConnection implements KvsConnection {
     }
 
     private void lazyInitializer() throws IOException {
-        if (config.getHost() == null) {
-            throw new IllegalArgumentException("Empty host to connect.");
-        }
-        if (config.getPort() == null) {
-            throw new IllegalArgumentException("Empty port to connect.");
-        }
-        if ((this.socket == null) || (!this.socket.isConnected())) {
-            this.socket = new Socket(config.getHost(), config.getPort());
-            requester = new PrintWriter(socket.getOutputStream(), true);
-            responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//        if (config.getHost() == null) {
+//            throw new IllegalArgumentException("Empty host to connect.");
+//        }
+//        if (config.getPort() == null) {
+//            throw new IllegalArgumentException("Empty port to connect.");
+//        }
+        try {
+            if ((this.socket == null) || (!this.socket.isConnected())) {
+                this.socket = new Socket(config.getHost(), config.getPort());
+                requester = new PrintWriter(socket.getOutputStream(), true);
+                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            }
+        } catch (Exception e) {
+            throw new ConnectionException("Connection socket could not be opened.", e);
         }
     }
 
