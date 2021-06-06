@@ -29,6 +29,8 @@ public class JavaSocketServerConnector implements Closeable {
     /**
      * Экзекьютор для выполнения ClientTask
      */
+    private final ExecutorService clientIOWorkers = Executors.newSingleThreadExecutor();
+
     private final ExecutorService connectionAcceptorExecutor = Executors.newSingleThreadExecutor();
 
     private final ServerSocket serverSocket;
@@ -51,18 +53,13 @@ public class JavaSocketServerConnector implements Closeable {
      */
     public void start() {
 
-        try {
-            while (true) {
-                connectionAcceptorExecutor.submit(new ClientTask(serverSocket.accept(), databaseServer));
-                //connectionAcceptorExecutor.execute(new ClientTask(serverSocket.accept(), databaseServer));
+        connectionAcceptorExecutor.submit(() -> {
+            try {
+                clientIOWorkers.submit(new ClientTask(serverSocket.accept(), databaseServer));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            connectionAcceptorExecutor.shutdown();
-        }
-
-//        connectionAcceptorExecutor.submit(() -> {
-//            // todo implement
-//        });
+        });
 
     }
 
@@ -72,6 +69,7 @@ public class JavaSocketServerConnector implements Closeable {
     @Override
     public void close() {
         connectionAcceptorExecutor.shutdownNow();
+        clientIOWorkers.shutdownNow();
         try {
             System.out.println("Stopping socket connector");
             serverSocket.close();

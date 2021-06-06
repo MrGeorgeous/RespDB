@@ -210,7 +210,8 @@ public class RespReader implements AutoCloseable {
     }
 
     private boolean end() throws IOException {
-        return stream.available() == 0;
+        return false;
+        //return stream.available() == 0;
     }
 
 
