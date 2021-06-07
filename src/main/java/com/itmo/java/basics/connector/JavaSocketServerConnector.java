@@ -147,6 +147,8 @@ public class JavaSocketServerConnector implements Closeable {
                         //DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).join().serialize();
 
                         writer.write(server.executeNextCommand(reader.readCommand()).join().serialize());
+                        clientSocket.getOutputStream().flush();
+
 
 //                        RespObject result;
 //                        try {
@@ -157,6 +159,8 @@ public class JavaSocketServerConnector implements Closeable {
 //                        //result.write(System.out);
 //                        writer.write(result);
 
+                    } else {
+                        break;
                     }
                 }
             } catch (Exception ignored) {
