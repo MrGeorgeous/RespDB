@@ -177,18 +177,25 @@ public class RespReader implements AutoCloseable {
     }
 
     private void skipCRLF() throws IOException {
+        String read = "";
         for (int i = 0; i < CRLF.getBytes().length; i++) {
-           System.out.print((char)readNextByte());
+           read += (char)readNextByte();
             //System.out.print(scanner.nextByte());
+        }
+        if (!read.equals(CRLF)) {
+            throw new IOException("Wrong CRLF skip.");
         }
     }
 
     private byte[] readUntilCRLF() throws IOException {
         byte t = readNextByte();
         List<Byte> bytes = new ArrayList<Byte>();
-        while ((t != LF) && !end()) {
+        while (t != LF) {
             bytes.add(t);
             t = readNextByte();
+        }
+        if ((bytes.size() >= 2) && (bytes.get(bytes.size() - 1) != CR)) {
+            throw new IOException("Wrong CRLF skip.");
         }
         byte[] b = new byte[bytes.size() - 1];
         for (int i = 0; i < bytes.size() - 1; i++) {
