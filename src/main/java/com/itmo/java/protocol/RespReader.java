@@ -55,12 +55,9 @@ public class RespReader implements AutoCloseable {
      */
     public RespObject readObject() throws IOException {
 
-        if (end()) {
-            throw new EOFException("Empty InputStream.");
-        }
-
         try {
 
+            ensureNotEnd();
             char code = (char)getNextByte();
 
             if (code == RespCommandId.CODE) {
@@ -94,6 +91,7 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespError readError() throws IOException {
+        ensureNotEnd();
         char code = readCode();
         return new RespError(readUntilCRLF());
     }
@@ -105,6 +103,7 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespBulkString readBulkString() throws IOException {
+        ensureNotEnd();
         char code = readCode();
         int len = readIntToCRLF();
         if (len == -1) {
@@ -124,6 +123,7 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespArray readArray() throws IOException {
+        ensureNotEnd();
         char code = readCode();
         int len = readIntToCRLF();
         //skipCRLF();
@@ -141,6 +141,7 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespCommandId readCommandId() throws IOException {
+        ensureNotEnd();
         char code = readCode();
         int commandId = readInt();
         skipCRLF();
@@ -221,6 +222,13 @@ public class RespReader implements AutoCloseable {
         return getNextByte() == -1;
         //return stream.available() == 0;
     }
+
+    private void ensureNotEnd() throws IOException {
+        if (end()) {
+            throw new EOFException("Empty InputStream.");
+        }
+    }
+
 
 
 
