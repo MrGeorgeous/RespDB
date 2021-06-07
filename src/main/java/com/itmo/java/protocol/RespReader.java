@@ -39,6 +39,13 @@ public class RespReader implements AutoCloseable {
         return r == RespArray.CODE;
     }
 
+    public boolean hasObject() throws IOException {
+        if (end()) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Считывает из input stream следующий объект. Может прочитать любой объект, сам определит его тип на основе кода объекта.
      * Например, если первый элемент "-", то вернет ошибку. Если "$" - bulk строку
@@ -210,7 +217,7 @@ public class RespReader implements AutoCloseable {
     }
 
     private boolean end() throws IOException {
-        return false;
+        return getNextByte() == -1;
         //return stream.available() == 0;
     }
 

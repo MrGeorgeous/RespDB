@@ -17,12 +17,15 @@ import java.util.stream.Collectors;
 public class SocketKvsConnection implements KvsConnection {
 
     private ConnectionConfig config;
-    private Socket socket;
+    private Socket socket = null;
     private PrintWriter requester = null;
     private BufferedReader responder = null;
 
     public SocketKvsConnection(ConnectionConfig config) {
         this.config = config;
+        if (config.getPort() == 0) {
+            throw new IllegalArgumentException("Empty port in configuration.");
+        }
     }
 
     /**
@@ -35,6 +38,9 @@ public class SocketKvsConnection implements KvsConnection {
     public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
         try {
             if ((this.socket == null) || (!this.socket.isConnected())) {
+                //if (config.getPort() == null) {
+                //    throw new ConnectionException("Empty port in configuration.");
+                //}
                 this.socket = new Socket(config.getHost(), config.getPort());
                 requester = new PrintWriter(socket.getOutputStream(), true);
                 responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -55,9 +61,17 @@ public class SocketKvsConnection implements KvsConnection {
 //            }
 //            RespReader rr = new RespReader(new ByteArrayInputStream(result.getBytes()));
 
-            while (socket.getInputStream().available() == 0);
-            RespReader rr = new RespReader(socket.getInputStream());
-            return rr.readObject();
+            //while (socket.getInputStream().available() == 0);
+
+            RespReader reader = new RespReader(socket.getInputStream());
+            while (socket.isConnected()) {
+                if (reader.hasObject()) {
+                    return reader.readObject();
+                }
+            }
+
+            throw new ConnectionException("Did not receive the response.", null);
+
         } catch (Exception e) {
             throw new ConnectionException("Connection was not established or lost.", e);
         }
