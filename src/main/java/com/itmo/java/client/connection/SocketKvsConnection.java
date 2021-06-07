@@ -46,18 +46,18 @@ public class SocketKvsConnection implements KvsConnection {
      */
     @Override
     public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
-        try {
-            if ((this.socket == null) || (!this.socket.isConnected())) {
-                //if (config.getPort() == null) {
-                //    throw new ConnectionException("Empty port in configuration.");
-                //}
-                this.socket = new Socket(config.getHost(), config.getPort());
-                requester = new PrintWriter(socket.getOutputStream(), true);
-                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            }
-        } catch (Exception e) {
-            throw new ConnectionException("Connection socket could not be opened.", e);
-        }
+//        try {
+//            if ((this.socket == null) || (!this.socket.isConnected())) {
+//                //if (config.getPort() == null) {
+//                //    throw new ConnectionException("Empty port in configuration.");
+//                //}
+//                this.socket = new Socket(config.getHost(), config.getPort());
+//                requester = new PrintWriter(socket.getOutputStream(), true);
+//                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            }
+//        } catch (Exception e) {
+//            throw new ConnectionException("Connection socket could not be opened.", e);
+//        }
         try {
             RespWriter rw = new RespWriter(socket.getOutputStream());
             rw.write(command);
@@ -76,11 +76,14 @@ public class SocketKvsConnection implements KvsConnection {
             RespReader reader = new RespReader(socket.getInputStream());
             while (socket.isConnected()) {
                 if (reader.hasObject()) {
-                    RespObject r = reader.readObject();
-//                    if (r.isError()) {
-//                        throw new DatabaseExecutionException(r.asString(), null);
-//                    }
-                    return r;
+
+                    try {
+                        RespObject r = reader.readObject();
+                        return r;
+                    } catch (IOException e) {
+                        throw new ConnectionException("Response has been found corrupted.", e);
+                    }
+
                 }
             }
 
