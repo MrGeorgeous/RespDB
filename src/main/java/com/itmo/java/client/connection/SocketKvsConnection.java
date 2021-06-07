@@ -66,14 +66,18 @@ public class SocketKvsConnection implements KvsConnection {
             RespReader reader = new RespReader(socket.getInputStream());
             while (socket.isConnected()) {
                 if (reader.hasObject()) {
-                    return reader.readObject();
+                    RespObject r = reader.readObject();
+                    if (r.isError()) {
+                        throw new ConnectionException(r.asString(), null);
+                    }
+                    return r;
                 }
             }
 
             throw new ConnectionException("Did not receive the response.", null);
 
         } catch (Exception e) {
-            throw new ConnectionException("Connection was not established or lost.", e);
+            throw new ConnectionException("Processing request failed.", e);
         }
     }
 

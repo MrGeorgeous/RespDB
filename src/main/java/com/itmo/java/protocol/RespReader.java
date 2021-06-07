@@ -212,7 +212,8 @@ public class RespReader implements AutoCloseable {
             buffer = 0;
             return r;
         }
-        byte r = stream.readNBytes(1)[0];
+        byte r = (byte) stream.read();
+        //byte r = stream.readNBytes(1)[0];
         return r;
     }
 
