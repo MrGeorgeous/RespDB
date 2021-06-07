@@ -68,9 +68,9 @@ public class SocketKvsConnection implements KvsConnection {
             while (socket.isConnected()) {
                 if (reader.hasObject()) {
                     RespObject r = reader.readObject();
-                    if (r.isError()) {
-                        throw new DatabaseExecutionException(r.asString(), null);
-                    }
+//                    if (r.isError()) {
+//                        throw new DatabaseExecutionException(r.asString(), null);
+//                    }
                     return r;
                 }
             }
