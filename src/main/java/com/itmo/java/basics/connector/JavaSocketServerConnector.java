@@ -17,6 +17,7 @@ import com.itmo.java.basics.resp.CommandReader;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.RespWriter;
 import com.itmo.java.protocol.model.RespArray;
+import com.itmo.java.protocol.model.RespError;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.io.*;
@@ -59,7 +60,9 @@ public class JavaSocketServerConnector implements Closeable {
 
         connectionAcceptorExecutor.submit(() -> {
             try {
-                clientIOWorkers.submit(new ClientTask(serverSocket.accept(), databaseServer));
+                if ((serverSocket != null) && !serverSocket.isClosed()) {
+                    clientIOWorkers.submit(new ClientTask(serverSocket.accept(), databaseServer));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -132,9 +135,18 @@ public class JavaSocketServerConnector implements Closeable {
                 writer = new RespWriter(clientSocket.getOutputStream());
                 while (clientSocket.isConnected()) {
                     if (reader.hasNextCommand()) {
+
+//                        clientSocket.getOutputStream().write(111);
+//                        continue;
+
                         System.out.println("Getting command");
                         //DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).join().serialize();
-                        RespObject result = server.executeNextCommand(reader.readCommand()).join().serialize();
+                        RespObject result;
+                        try {
+                            result = server.executeNextCommand(reader.readCommand()).join().serialize();
+                        } catch (Exception e) {
+                            result = new RespError(e.getMessage().getBytes());
+                        }
                         result.write(System.out);
                         writer.write(result);
                     }
