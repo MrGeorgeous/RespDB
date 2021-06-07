@@ -64,7 +64,7 @@ public class JavaSocketServerConnector implements Closeable {
                     clientIOWorkers.submit(new ClientTask(serverSocket.accept(), databaseServer));
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         });
 
@@ -78,7 +78,7 @@ public class JavaSocketServerConnector implements Closeable {
         connectionAcceptorExecutor.shutdownNow();
         clientIOWorkers.shutdownNow();
         try {
-            System.out.println("Stopping socket connector");
+            //System.out.println("Stopping socket connector");
             serverSocket.close();
         } catch (Exception e) {
 
@@ -139,7 +139,7 @@ public class JavaSocketServerConnector implements Closeable {
 //                        clientSocket.getOutputStream().write(111);
 //                        continue;
 
-                        System.out.println("Getting command");
+                        //System.out.println("Getting command");
                         //DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).join().serialize();
                         RespObject result;
                         try {
@@ -147,13 +147,13 @@ public class JavaSocketServerConnector implements Closeable {
                         } catch (Exception e) {
                             result = new RespError(e.getMessage().getBytes());
                         }
-                        result.write(System.out);
+                        //result.write(System.out);
                         writer.write(result);
                     }
                 }
             } catch (Exception ignored) {
-                ignored.printStackTrace();
-                System.out.println("Failed to process request.");
+                //ignored.printStackTrace();
+                //System.out.println("Failed to process request.");
             }
 //            try {
 //                if (reader != null) {
@@ -175,7 +175,7 @@ public class JavaSocketServerConnector implements Closeable {
             try {
                 clientSocket.close();
             } catch (Exception e) {
-                System.out.println("Client socket was not closed.");
+                //System.out.println("Client socket was not closed.");
             }
         }
 
