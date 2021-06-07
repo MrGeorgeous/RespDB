@@ -141,14 +141,18 @@ public class JavaSocketServerConnector implements Closeable {
 
                         //System.out.println("Getting command");
                         //DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).join().serialize();
-                        RespObject result;
-                        try {
-                            result = server.executeNextCommand(reader.readCommand()).join().serialize();
-                        } catch (Exception e) {
-                            result = new RespError(e.getMessage().getBytes());
-                        }
-                        //result.write(System.out);
-                        writer.write(result);
+
+                        writer.write(server.executeNextCommand(reader.readCommand()).join().serialize());
+
+//                        RespObject result;
+//                        try {
+//                            result = server.executeNextCommand(reader.readCommand()).join().serialize();
+//                        } catch (Exception e) {
+//                            result = new RespError(e.getMessage().getBytes());
+//                        }
+//                        //result.write(System.out);
+//                        writer.write(result);
+
                     }
                 }
             } catch (Exception ignored) {
