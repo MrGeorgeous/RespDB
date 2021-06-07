@@ -30,8 +30,8 @@ public class SocketKvsConnection implements KvsConnection {
                 //    throw new ConnectionException("Empty port in configuration.");
                 //}
                 this.socket = new Socket(config.getHost(), config.getPort());
-                requester = new PrintWriter(socket.getOutputStream(), true);
-                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                //requester = new PrintWriter(socket.getOutputStream(), true);
+                //responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Connection socket could not be opened.", e);
@@ -79,6 +79,7 @@ public class SocketKvsConnection implements KvsConnection {
             //while (socket.getInputStream().available() == 0);
 
             RespReader reader = new RespReader(socket.getInputStream());
+            //RespReader reader = new RespReader(new ByteArrayInputStream(socket.getInputStream().readAllBytes()));
             while (socket.isConnected()) {
                 if (reader.hasObject()) {
 

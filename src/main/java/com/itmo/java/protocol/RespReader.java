@@ -111,7 +111,9 @@ public class RespReader implements AutoCloseable {
         }
         byte[] str = readNBytes(len);
         skipCRLF();
-        assert(str.length == len);
+        if (str.length != len) {
+            throw new IOException("Corrupted bulk string.");
+        }
         //byte[] str = stream.readNBytes(len);
         return new RespBulkString(str);
     }
