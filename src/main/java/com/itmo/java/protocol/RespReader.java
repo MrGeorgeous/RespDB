@@ -217,8 +217,13 @@ public class RespReader implements AutoCloseable {
             buffer = 0;
             return r;
         }
-        byte r = (byte) stream.read();
-        //byte r = stream.readNBytes(1)[0];
+        byte r = -1;
+        try {
+            r = (byte) stream.read();
+            //r = stream.readNBytes(1)[0];
+        } catch (Exception e) {
+            //throw new IOException("Stream has been found corrupted.", e);
+        }
         if ((r == -1) && !suspendEOF) {
             throw new EOFException("End of file reached.");
         }
