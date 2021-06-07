@@ -109,6 +109,8 @@ public class JavaSocketServerConnector implements Closeable {
 
         private Socket clientSocket = null;
         private DatabaseServer server = null;
+        private CommandReader reader = null;
+        private RespWriter writer = null;
 
         /**
          * @param client клиентский сокет
@@ -128,12 +130,14 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-            CommandReader reader = null;
-            RespWriter writer = null;
             try {
-                reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnvironment());
-                writer = new RespWriter(clientSocket.getOutputStream());
-                while (clientSocket.isConnected()) {
+                if (reader == null) {
+                    reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnvironment());
+                }
+                if (writer == null) {
+                    writer = new RespWriter(clientSocket.getOutputStream());
+                }
+                while (clientSocket.isConnected() && !clientSocket.isInputShutdown() && !clientSocket.isOutputShutdown()) {
                     if (reader.hasNextCommand()) {
 
 //                        clientSocket.getOutputStream().write(111);
@@ -159,6 +163,13 @@ public class JavaSocketServerConnector implements Closeable {
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
+        }
+
+        /**
+         * Закрывает клиентский сокет
+         */
+        @Override
+        public void close() {
             try {
                 if (reader != null) {
                     reader.close();
@@ -169,14 +180,6 @@ public class JavaSocketServerConnector implements Closeable {
             } catch (Exception e) {
 
             }
-            close();
-        }
-
-        /**
-         * Закрывает клиентский сокет
-         */
-        @Override
-        public void close() {
             try {
                 clientSocket.close();
             } catch (Exception e) {
