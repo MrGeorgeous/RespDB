@@ -202,12 +202,16 @@ public class RespReader implements AutoCloseable {
 
     private byte getNextByte() throws IOException {
         if (buffer == 0) {
-            buffer = readNextByte();
+            buffer = readNextByte(true);
         }
         return buffer;
     }
 
     private byte readNextByte() throws IOException {
+        return readNextByte(false);
+    }
+
+    private byte readNextByte(boolean suspendEOF) throws IOException {
         if (buffer != 0) {
             byte r = buffer;
             buffer = 0;
@@ -215,6 +219,9 @@ public class RespReader implements AutoCloseable {
         }
         byte r = (byte) stream.read();
         //byte r = stream.readNBytes(1)[0];
+        if ((r == -1) && !suspendEOF) {
+            throw new EOFException("End of file reached.");
+        }
         return r;
     }
 
