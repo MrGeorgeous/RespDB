@@ -30,15 +30,16 @@ public class SimpleKvsClient implements KvsClient {
     }
 
     private String runCommand(KvsCommand c) throws DatabaseExecutionException {
+        RespObject response;
         try {
-            RespObject response = session.send(c.getCommandId(), c.serialize());
-            if (response.isError()) {
-                throw new DatabaseExecutionException("Error from server: " + response.asString());
-            }
-            return response.asString();
+            response = session.send(c.getCommandId(), c.serialize());
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException("KvsClient has failed to connect to the server.", e);
         }
+//        if (response.isError()) {
+//            throw new DatabaseExecutionException("Error from server: " + response.asString());
+//        }
+        return response.asString();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.itmo.java.client.connection;
 
 import com.itmo.java.client.exception.ConnectionException;
+import com.itmo.java.client.exception.DatabaseExecutionException;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.RespWriter;
 import com.itmo.java.protocol.model.RespArray;
@@ -68,7 +69,7 @@ public class SocketKvsConnection implements KvsConnection {
                 if (reader.hasObject()) {
                     RespObject r = reader.readObject();
                     if (r.isError()) {
-                        throw new ConnectionException(r.asString(), null);
+                        throw new DatabaseExecutionException(r.asString(), null);
                     }
                     return r;
                 }
