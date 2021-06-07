@@ -159,16 +159,16 @@ public class JavaSocketServerConnector implements Closeable {
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
-//            try {
-//                if (reader != null) {
-//                    reader.close();
-//                }
-//                if (writer != null) {
-//                    writer.close();
-//                }
-//            } catch (Exception e) {
-//
-//            }
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (Exception e) {
+
+            }
         }
 
         /**
