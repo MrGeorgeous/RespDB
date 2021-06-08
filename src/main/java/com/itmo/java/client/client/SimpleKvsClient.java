@@ -43,13 +43,14 @@ public class SimpleKvsClient implements KvsClient {
             //return null;
             throw new DatabaseExecutionException("Error from server: " + response.asString());
         }
-        ByteArrayOutputStream str = new ByteArrayOutputStream();
-        try {
-            response.write(str);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return str.toString();
+        return response.asString();
+//        ByteArrayOutputStream str = new ByteArrayOutputStream();
+//        try {
+//            response.write(str);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return str.toString();
     }
 
     @Override
