@@ -69,9 +69,9 @@ public class ConfigLoader {
 
         for (String field : serverSettings.keySet()) {
             String value = properties.getProperty(field);
-            if (value != null) {
+            //if (value != null) {
                 serverSettings.put(field, value);
-            }
+            //}
         }
 
         ServerConfig serverConfig = new ServerConfig(serverSettings.get("kvs.host"), Integer.valueOf(serverSettings.get("kvs.port")));
