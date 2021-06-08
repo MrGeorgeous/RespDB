@@ -150,22 +150,22 @@ public class JavaSocketServerConnector implements Closeable {
                     if (cmdReader.hasNextCommand()) {
                         RespObject r;
                         try {
-                            r = server.executeNextCommand(cmdReader.readCommand()).join().serialize();
+                            r = server.executeNextCommand(cmdReader.readCommand()).get().serialize();
                             writer.write(r);
-                        } catch (Exception e) {
-                            writer.write(new RespError(e.getMessage().getBytes()));
+                        } catch (InterruptedException e) {
+                            //writer.write(new RespError(e.getMessage().getBytes()));
                             break;
                         }
                     }
                 }
             } catch (Exception e) {
                 //close();
-                try {
-                    writer.write(new RespError(e.getMessage().getBytes()));
-                } catch (IOException ex) {
-
-                }
-                //throw new RuntimeException("hahaha2");
+//                try {
+//                    writer.write(new RespError(e.getMessage().getBytes()));
+//                } catch (IOException ex) {
+//
+//                }
+                throw new RuntimeException("hahaha2");
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
