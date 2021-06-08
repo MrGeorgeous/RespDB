@@ -64,7 +64,8 @@ public class JavaSocketServerConnector implements Closeable {
                     Socket s = serverSocket.accept();
                     clientIOWorkers.submit(new ClientTask(s, databaseServer));
                 } catch (Exception e) {
-                    throw new RuntimeException("hahaha", e);
+                    break;
+                    //throw new RuntimeException("hahaha", e);
                 }
             }
         });
@@ -77,10 +78,10 @@ public class JavaSocketServerConnector implements Closeable {
      */
     @Override
     public void close() {
-        System.out.println("Stopping socket connector");
-        connectionAcceptorExecutor.shutdownNow();
-        clientIOWorkers.shutdownNow();
         try {
+            System.out.println("Stopping socket connector");
+            connectionAcceptorExecutor.shutdownNow();
+            clientIOWorkers.shutdownNow();
             serverSocket.close();
         } catch (Exception e) {
 
@@ -125,11 +126,12 @@ public class JavaSocketServerConnector implements Closeable {
                 this.reader = new RespReader(clientSocket.getInputStream());
                 this.writer = new RespWriter(clientSocket.getOutputStream());
             } catch (Exception e) {
-                try {
-                    writer.write(new RespError(e.getMessage().getBytes()));
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+//                try {
+//                    //writer.write(null);
+//                    writer.write(new RespError(e.getMessage().getBytes()));
+//                } catch (IOException ex) {
+//                    ex.printStackTrace();
+//                }
                 close();
             }
         }
