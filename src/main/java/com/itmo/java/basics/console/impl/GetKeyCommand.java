@@ -53,8 +53,7 @@ public class GetKeyCommand implements DatabaseCommand {
                 if (value.isPresent()) {
                     return new SuccessDatabaseCommandResult(value.get());
                 } else {
-                    return new SuccessDatabaseCommandResult(null);
-                    //return new FailedDatabaseCommandResult("Key '" + key + "' has not been found.");
+                    return new FailedDatabaseCommandResult("Key '" + key + "' has not been found.");
                 }
             } else {
                 return new FailedDatabaseCommandResult("Database '" + dbName + "' does not exist.");

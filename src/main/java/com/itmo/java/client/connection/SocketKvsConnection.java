@@ -77,7 +77,6 @@ public class SocketKvsConnection implements KvsConnection {
 
                     try {
                         RespObject r = reader.readObject();
-                        r.write(System.out);
                         return r;
                     } catch (IOException e) {
                         throw new ConnectionException("Response has been found corrupted.", e);

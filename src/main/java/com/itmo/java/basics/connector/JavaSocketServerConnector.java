@@ -46,28 +46,27 @@ public class JavaSocketServerConnector implements Closeable {
      */
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
         //try {
-        this.databaseServer = databaseServer;
-        this.serverSocket = new ServerSocket(config.getPort());
+            this.databaseServer = databaseServer;
+            this.serverSocket = new ServerSocket(config.getPort());
         //} catch (Exception e) {
         //    throw new IOException("ServerSocket could not be opened.", e);
         //}
     }
 
-    /**
+     /**
      * Начинает слушать заданный порт, начинает аксептить клиентские сокеты. На каждый из них начинает клиентскую таску
      */
     public void start() {
 
         connectionAcceptorExecutor.submit(() -> {
-            //while(!Thread.currentThread().isInterrupted()) {
+            while(!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket s = serverSocket.accept();
                     clientIOWorkers.submit(new ClientTask(s, databaseServer));
                 } catch (Exception e) {
-                    //break;
-                    //throw new RuntimeException("hahaha", e);
+                    throw new RuntimeException("hahaha", e);
                 }
-            //}
+            }
         });
 
 
@@ -78,10 +77,10 @@ public class JavaSocketServerConnector implements Closeable {
      */
     @Override
     public void close() {
+        System.out.println("Stopping socket connector");
+        connectionAcceptorExecutor.shutdownNow();
+        clientIOWorkers.shutdownNow();
         try {
-            System.out.println("Stopping socket connector");
-            connectionAcceptorExecutor.shutdownNow();
-            clientIOWorkers.shutdownNow();
             serverSocket.close();
         } catch (Exception e) {
 
@@ -95,9 +94,9 @@ public class JavaSocketServerConnector implements Closeable {
         DatabaseServerConfig config = configLoader.readConfig();
         ExecutionEnvironment env = new ExecutionEnvironmentImpl(config.getDbConfig());
         DatabaseServerInitializer initializer = new DatabaseServerInitializer(
-                new DatabaseInitializer(
-                        new TableInitializer(
-                                new SegmentInitializer())));
+                                                        new DatabaseInitializer(
+                                                                new TableInitializer(
+                                                                        new SegmentInitializer())));
         DatabaseServer dbServer = DatabaseServer.initialize(env, initializer);
 
         JavaSocketServerConnector server = new JavaSocketServerConnector(dbServer, config.getServerConfig());
@@ -126,13 +125,8 @@ public class JavaSocketServerConnector implements Closeable {
                 this.reader = new RespReader(clientSocket.getInputStream());
                 this.writer = new RespWriter(clientSocket.getOutputStream());
             } catch (Exception e) {
-//                try {
-//                    //writer.write(null);
-//                    writer.write(new RespError(e.getMessage().getBytes()));
-//                } catch (IOException ex) {
-//                    ex.printStackTrace();
-//                }
                 close();
+                throw new RuntimeException("hahahah", e);
             }
         }
 
@@ -145,28 +139,20 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
+            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-
-                    //if (cmdReader.hasNextCommand()) {
-                        RespObject r;
+                    if (cmdReader.hasNextCommand()) {
                         try {
-                            r = server.executeNextCommand(cmdReader.readCommand()).join().serialize();
-                            writer.write(r);
+                            writer.write(server.executeNextCommand(cmdReader.readCommand()).join().serialize());
+                            //clientSocket.getOutputStream().flush();
                         } catch (Exception e) {
-                            //writer.write(new RespError(e.getMessage().getBytes()));
                             break;
                         }
-                    //}
+                    }
                 }
             } catch (Exception e) {
                 //close();
-                try {
-                    writer.write(new RespError(e.getMessage().getBytes()));
-                } catch (IOException ex) {
-
-                }
-                //throw new RuntimeException("hahaha2");
+                throw new RuntimeException("hahaha2");
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
