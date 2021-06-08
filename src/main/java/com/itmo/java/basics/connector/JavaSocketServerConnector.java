@@ -60,14 +60,14 @@ public class JavaSocketServerConnector implements Closeable {
     public void start() {
 
         connectionAcceptorExecutor.submit(() -> {
-            while(!Thread.currentThread().isInterrupted()) {
+            //while(!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket s = serverSocket.accept();
                     clientIOWorkers.submit(new ClientTask(s, databaseServer));
                 } catch (Exception e) {
                     throw new RuntimeException("hahaha", e);
                 }
-            }
+            //}
         });
 
 
