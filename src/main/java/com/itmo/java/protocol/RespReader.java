@@ -239,8 +239,12 @@ public class RespReader implements AutoCloseable {
         return r;
     }
 
-    private boolean end() throws IOException {
-        return getNextByte() == -1;
+    private boolean end() {
+        try {
+            return getNextByte() == -1;
+        } catch (Exception e) {
+            return true;
+        }
         //return stream.available() == 0;
     }
 
