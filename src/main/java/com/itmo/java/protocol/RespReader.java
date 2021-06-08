@@ -39,7 +39,7 @@ public class RespReader implements AutoCloseable {
         return r == RespArray.CODE;
     }
 
-    public boolean hasObject() throws IOException {
+    public boolean hasObject() {
         if (end()) {
             return false;
         }
@@ -230,8 +230,11 @@ public class RespReader implements AutoCloseable {
         try {
             r = (byte) stream.read();
             //r = stream.readNBytes(1)[0];
-        } catch (Exception e) {
-            //throw new IOException("Stream has been found corrupted.", e);
+        } catch (IOException e) {
+            buffer = -1;
+            if (!suspendEOF) {
+                throw new IOException("Stream has been found corrupted.", e);
+            }
         }
         if ((r == -1) && !suspendEOF) {
             throw new EOFException("End of file reached.");
@@ -248,7 +251,7 @@ public class RespReader implements AutoCloseable {
         //return stream.available() == 0;
     }
 
-    private void ensureNotEnd() throws IOException {
+    private void ensureNotEnd() throws EOFException {
         if (end()) {
             throw new EOFException("Empty InputStream.");
         }
