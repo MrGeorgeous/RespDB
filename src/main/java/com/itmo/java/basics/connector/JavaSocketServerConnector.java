@@ -145,7 +145,10 @@ public class JavaSocketServerConnector implements Closeable {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
                     if (cmdReader.hasNextCommand()) {
                         DatabaseCommand cmd = cmdReader.readCommand();
-                        writer.write(server.executeNextCommand(cmd).join().serialize());
+                        DatabaseCommandResult r = server.executeNextCommand(cmd).join();
+                        writer.write(r.serialize());
+                    } else {
+                        break;
                     }
                 }
             } catch (IOException e) {

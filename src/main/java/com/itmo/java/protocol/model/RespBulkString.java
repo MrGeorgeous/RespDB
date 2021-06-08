@@ -41,7 +41,7 @@ public class RespBulkString implements RespObject {
      */
     @Override
     public String asString() {
-        if (data == null) {
+        if ((data == null) || (data.length == 0)) {
             return null;
         } else {
             return new String(data);

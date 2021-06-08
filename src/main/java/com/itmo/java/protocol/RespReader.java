@@ -32,6 +32,7 @@ public class RespReader implements AutoCloseable {
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
+        ensureNotEnd();
         if (end()) {
             return false;
         }
