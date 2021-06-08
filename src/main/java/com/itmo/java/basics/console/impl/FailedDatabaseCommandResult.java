@@ -13,7 +13,7 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
 
     public FailedDatabaseCommandResult(String payload) {
         if (payload == null) {
-            this.message = new byte[0];
+            this.message = null;
         } else {
             this.message = payload.getBytes();
         }
