@@ -36,21 +36,21 @@ public class SimpleKvsClient implements KvsClient {
         try {
             response = session.send(c.getCommandId(), c.serialize());
         } catch (ConnectionException e) {
-            return null;
-            //throw new DatabaseExecutionException("KvsClient has failed to connect to the server.", e);
+            //return null;
+            throw new DatabaseExecutionException("KvsClient has failed to connect to the server.", e);
         }
         if (response.isError()) {
             //return null;
             throw new DatabaseExecutionException("Error from server: " + response.asString());
         }
-        return response.asString();
-//        ByteArrayOutputStream str = new ByteArrayOutputStream();
-//        try {
-//            response.write(str);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return str.toString();
+        //return response.asString();
+        ByteArrayOutputStream str = new ByteArrayOutputStream();
+        try {
+            response.write(str);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return str.toString();
     }
 
     @Override
