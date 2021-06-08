@@ -24,16 +24,7 @@ public class SocketKvsConnection implements KvsConnection {
 
     public SocketKvsConnection(ConnectionConfig config) {
         this.config = config;
-    }
 
-    /**
-     * Отправляет с помощью сокета команду и получает результат.
-     * @param commandId id команды (номер)
-     * @param command   команда
-     * @throws ConnectionException если сокет закрыт или если произошла другая ошибка соединения
-     */
-    @Override
-    public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
         try {
             if ((this.socket == null) || (!this.socket.isConnected())) {
                 //if (config.getPort() == null) {
@@ -44,8 +35,20 @@ public class SocketKvsConnection implements KvsConnection {
                 //responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             }
         } catch (Exception e) {
-            throw new ConnectionException("send: Connection socket could not be opened. ", e);
+            throw new IllegalArgumentException("send: Connection socket could not be opened. ", e);
         }
+
+    }
+
+    /**
+     * Отправляет с помощью сокета команду и получает результат.
+     * @param commandId id команды (номер)
+     * @param command   команда
+     * @throws ConnectionException если сокет закрыт или если произошла другая ошибка соединения
+     */
+    @Override
+    public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
+
 
         try {
             RespWriter rw = new RespWriter(socket.getOutputStream());
