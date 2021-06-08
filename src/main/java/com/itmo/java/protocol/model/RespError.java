@@ -16,11 +16,7 @@ public class RespError implements RespObject {
     private byte[] message;
 
     public RespError(byte[] message) {
-        if (message == null) {
-            this.message = new byte[0];
-        } else {
-            this.message = message;
-        }
+        this.message = message;
     }
 
     /**
@@ -35,7 +31,7 @@ public class RespError implements RespObject {
 
     @Override
     public String asString() {
-        if ((message == null) /*||(message.length == 0)*/) {
+        if (isEmpty()) {
             return null;
         } else {
             return new String(message);
@@ -46,5 +42,9 @@ public class RespError implements RespObject {
     public void write(OutputStream os) throws IOException {
         String r = (char)CODE + new String(message) + "\r\n";
         os.write(r.getBytes());
+    }
+
+    private boolean isEmpty() {
+        return (message == null) || (message.length == 0);
     }
 }

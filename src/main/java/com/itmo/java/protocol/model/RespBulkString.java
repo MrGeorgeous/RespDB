@@ -14,14 +14,10 @@ public class RespBulkString implements RespObject {
 
     public static final int NULL_STRING_SIZE = -1;
 
-    private byte[] data;
+    private byte[] data = null;
 
     public RespBulkString(byte[] data) {
-        if (data == null) {
-            this.data = new byte[0];
-        } else {
-            this.data = data;
-        }
+        this.data = data;
     }
 
     /**
@@ -41,7 +37,7 @@ public class RespBulkString implements RespObject {
      */
     @Override
     public String asString() {
-        if ((data == null) || (data.length == 0)) {
+        if (isEmpty()) {
             return null;
         } else {
             return new String(data);
@@ -51,9 +47,14 @@ public class RespBulkString implements RespObject {
     @Override
     public void write(OutputStream os) throws IOException {
         String r = (char)CODE + String.valueOf(NULL_STRING_SIZE) + "\r\n";
-        if (data.length != 0) {
+        if (!isEmpty()) {
             r = (char)CODE + String.valueOf(data.length) + "\r\n" + new String(data) + "\r\n";
         }
         os.write(r.getBytes());
     }
+
+    private boolean isEmpty() {
+        return (data == null) || (data.length == 0);
+    }
+
 }
