@@ -73,12 +73,12 @@ public class JavaSocketServerConnector implements Closeable {
             //try {
             while(!Thread.currentThread().isInterrupted()) {
                 try {
-                    final Socket s = serverSocket.accept();
-                    if ((serverSocket != null) && !serverSocket.isClosed()) {
-                        clientIOWorkers.submit(new ClientTask(s, databaseServer));
-                    }
+                    Socket s = serverSocket.accept();
+                    //if ((serverSocket != null) && !serverSocket.isClosed()) {
+                    clientIOWorkers.submit(new ClientTask(s, databaseServer));
+                    //}
                 } catch (Exception e) {
-                    //s.close();
+                    throw new RuntimeException("hahaha", e);
                 }
             }
 //                    } catch (IOException e) {
@@ -165,8 +165,14 @@ public class JavaSocketServerConnector implements Closeable {
                         //System.out.println("Getting command");
                         //DatabaseCommandResult result = server.executeNextCommand(reader.readCommand()).join().serialize();
 
-                        writer.write(server.executeNextCommand(reader.readCommand()).join().serialize());
-                        clientSocket.getOutputStream().flush();
+                        try {
+                            writer.write(server.executeNextCommand(reader.readCommand()).join().serialize());
+                            //clientSocket.getOutputStream().flush();
+                        } catch (Exception e) {
+                            break;
+                        }
+//                        writer.write(server.executeNextCommand(reader.readCommand()).join().serialize());
+//                        clientSocket.getOutputStream().flush();
 
 
 //                        RespObject result;
@@ -182,10 +188,13 @@ public class JavaSocketServerConnector implements Closeable {
                         break;
                     }
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                //close();
+                throw new RuntimeException("hahaha2");
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
+            close();
         }
 
         /**
