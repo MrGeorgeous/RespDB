@@ -36,9 +36,10 @@ public class SimpleKvsClient implements KvsClient {
         } catch (ConnectionException e) {
             throw new DatabaseExecutionException("KvsClient has failed to connect to the server.", e);
         }
-//        if (response.isError()) {
-//            throw new DatabaseExecutionException("Error from server: " + response.asString());
-//        }
+        if (response.isError()) {
+            return null;
+            //throw new DatabaseExecutionException("Error from server: " + response.asString());
+        }
         return response.asString();
     }
 
