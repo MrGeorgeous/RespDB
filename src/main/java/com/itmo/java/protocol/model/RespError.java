@@ -16,7 +16,11 @@ public class RespError implements RespObject {
     private byte[] message;
 
     public RespError(byte[] message) {
-        this.message = message;
+        if (message == null) {
+            this.message = new byte[0];
+        } else {
+            this.message = message;
+        }
     }
 
     /**
@@ -31,7 +35,11 @@ public class RespError implements RespObject {
 
     @Override
     public String asString() {
-        return new String(message);
+        if (message == null) {
+            return null;
+        } else {
+            return new String(message);
+        }
     }
 
     @Override

@@ -24,7 +24,7 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public String getPayLoad() {
-        if (this.message == null) {
+        if ((this.message == null) || (this.message.length == 0)) {
             return null;
         } else {
             return new String(message);
