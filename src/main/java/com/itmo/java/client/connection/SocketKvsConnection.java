@@ -34,30 +34,19 @@ public class SocketKvsConnection implements KvsConnection {
      */
     @Override
     public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
-//        try {
-//            if ((this.socket == null) || (!this.socket.isConnected())) {
-//                //if (config.getPort() == null) {
-//                //    throw new ConnectionException("Empty port in configuration.");
-//                //}
-//                this.socket = new Socket(config.getHost(), config.getPort());
-//                requester = new PrintWriter(socket.getOutputStream(), true);
-//                responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            }
-//        } catch (Exception e) {
-//            throw new ConnectionException("Connection socket could not be opened.", e);
-//        }
         try {
-            //if ((this.socket == null) || (!this.socket.isConnected())) {
-            //if (config.getPort() == null) {
-            //    throw new ConnectionException("Empty port in configuration.");
-            //}
-            this.socket = new Socket(config.getHost(), config.getPort());
-            //requester = new PrintWriter(socket.getOutputStream(), true);
-            //responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            //}
+            if ((this.socket == null) || (!this.socket.isConnected())) {
+                //if (config.getPort() == null) {
+                //    throw new ConnectionException("Empty port in configuration.");
+                //}
+                this.socket = new Socket(config.getHost(), config.getPort());
+                //requester = new PrintWriter(socket.getOutputStream(), true);
+                //responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Connection socket could not be opened.", e);
+            throw new ConnectionException("send: Connection socket could not be opened. ", e);
         }
+
         try {
             RespWriter rw = new RespWriter(socket.getOutputStream());
 
