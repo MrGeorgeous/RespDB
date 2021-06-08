@@ -156,7 +156,7 @@ public class JavaSocketServerConnector implements Closeable {
                 if (writer == null) {
                     writer = new RespWriter(clientSocket.getOutputStream());
                 }
-                while (clientSocket.isConnected() && !clientSocket.isInputShutdown() && !clientSocket.isOutputShutdown()) {
+                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
                     if (reader.hasNextCommand()) {
 
 //                        clientSocket.getOutputStream().write(111);
