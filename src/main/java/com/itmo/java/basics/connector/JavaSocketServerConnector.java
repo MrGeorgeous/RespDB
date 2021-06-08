@@ -65,8 +65,8 @@ public class JavaSocketServerConnector implements Closeable {
                     Socket s = serverSocket.accept();
                     clientIOWorkers.submit(new ClientTask(s, databaseServer));
                 } catch (Exception e) {
-                    break;
-                    //throw new RuntimeException("hahaha", e);
+                    //break;
+                    throw new RuntimeException("hahaha", e);
                 }
             }
         });
@@ -148,10 +148,10 @@ public class JavaSocketServerConnector implements Closeable {
         public void run() {
             try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-                    if (cmdReader.hasNextCommand()) {
-                        DatabaseCommand cmd = cmdReader.readCommand();
-                        RespObject r = new RespError("ahaha".getBytes());
-                        try {
+                    try {
+                        if (cmdReader.hasNextCommand()) {
+                            DatabaseCommand cmd = cmdReader.readCommand();
+                            RespObject r = new RespError("ahaha".getBytes());
                             DatabaseCommandResult ro;
                             //ro = new SuccessDatabaseCommandResult("success".getBytes());
                             ro = server.executeNextCommand(cmd).join();
@@ -160,11 +160,12 @@ public class JavaSocketServerConnector implements Closeable {
                             }
                             //r = ro.serialize();
                             writer.write(r);
-                        } catch (Exception e) {
-                            //writer.write(new RespError(e.getMessage().getBytes()));
-                            break;
                         }
+                    } catch (Exception e) {
+                        //writer.write(new RespError(e.getMessage().getBytes()));
+                        break;
                     }
+
                 }
             } catch (Exception e) {
                 //close();
