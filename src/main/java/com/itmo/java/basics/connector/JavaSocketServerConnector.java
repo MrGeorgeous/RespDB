@@ -125,8 +125,12 @@ public class JavaSocketServerConnector implements Closeable {
                 this.reader = new RespReader(clientSocket.getInputStream());
                 this.writer = new RespWriter(clientSocket.getOutputStream());
             } catch (Exception e) {
+                try {
+                    writer.write(new RespError(e.getMessage().getBytes()));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
                 close();
-                throw new RuntimeException("hahahah", e);
             }
         }
 
@@ -154,7 +158,12 @@ public class JavaSocketServerConnector implements Closeable {
                 }
             } catch (Exception e) {
                 //close();
-                throw new RuntimeException("hahaha2");
+                try {
+                    writer.write(new RespError(e.getMessage().getBytes()));
+                } catch (IOException ex) {
+
+                }
+                //throw new RuntimeException("hahaha2");
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
