@@ -1,5 +1,6 @@
 package com.itmo.java.basics.config;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -45,7 +46,12 @@ public class ConfigLoader {
             properties.load(stream);
             stream.close();
         } catch (Exception e) {
-            // ignoring non-existent configuration file
+            try {
+                FileInputStream stream = new FileInputStream(configPath);
+                properties.load(stream);
+            } catch (Exception ex) {
+                // ignoring non-existent configuration file
+            }
         }
 
         DatabaseConfig databaseConfig;
