@@ -153,7 +153,7 @@ public class JavaSocketServerConnector implements Closeable {
                             r = server.executeNextCommand(cmdReader.readCommand()).join().serialize();
                             writer.write(r);
                         } catch (Exception e) {
-                            writer.write(new RespError(e.getMessage().getBytes()));
+                            //writer.write(new RespError(e.getMessage().getBytes()));
                             break;
                         }
                     }
