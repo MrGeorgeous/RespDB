@@ -9,7 +9,6 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.console.impl.ExecutionEnvironmentImpl;
-import com.itmo.java.basics.console.impl.SuccessDatabaseCommandResult;
 import com.itmo.java.basics.initialization.impl.DatabaseInitializer;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.SegmentInitializer;
@@ -47,14 +46,14 @@ public class JavaSocketServerConnector implements Closeable {
      */
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
         //try {
-            this.databaseServer = databaseServer;
-            this.serverSocket = new ServerSocket(config.getPort());
+        this.databaseServer = databaseServer;
+        this.serverSocket = new ServerSocket(config.getPort());
         //} catch (Exception e) {
         //    throw new IOException("ServerSocket could not be opened.", e);
         //}
     }
 
-     /**
+    /**
      * Начинает слушать заданный порт, начинает аксептить клиентские сокеты. На каждый из них начинает клиентскую таску
      */
     public void start() {
@@ -65,8 +64,8 @@ public class JavaSocketServerConnector implements Closeable {
                     Socket s = serverSocket.accept();
                     clientIOWorkers.submit(new ClientTask(s, databaseServer));
                 } catch (Exception e) {
-                    //break;
-                    throw new RuntimeException("hahaha", e);
+                    break;
+                    //throw new RuntimeException("hahaha", e);
                 }
             }
         });
@@ -96,9 +95,9 @@ public class JavaSocketServerConnector implements Closeable {
         DatabaseServerConfig config = configLoader.readConfig();
         ExecutionEnvironment env = new ExecutionEnvironmentImpl(config.getDbConfig());
         DatabaseServerInitializer initializer = new DatabaseServerInitializer(
-                                                        new DatabaseInitializer(
-                                                                new TableInitializer(
-                                                                        new SegmentInitializer())));
+                new DatabaseInitializer(
+                        new TableInitializer(
+                                new SegmentInitializer())));
         DatabaseServer dbServer = DatabaseServer.initialize(env, initializer);
 
         JavaSocketServerConnector server = new JavaSocketServerConnector(dbServer, config.getServerConfig());
@@ -148,35 +147,25 @@ public class JavaSocketServerConnector implements Closeable {
         public void run() {
             try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-                    try {
-                        if (cmdReader.hasNextCommand()) {
-                            DatabaseCommand cmd = cmdReader.readCommand();
-                            RespObject r = new RespError("ahaha".getBytes());
-                            DatabaseCommandResult ro;
-                            //ro = new SuccessDatabaseCommandResult("success".getBytes());
-                            ro = server.executeNextCommand(cmd).join();
-                            if (ro != null) {
-                                r = ro.serialize();
-                            }
-                            //r = ro.serialize();
+                    if (cmdReader.hasNextCommand()) {
+                        RespObject r;
+                        try {
+                            r = server.executeNextCommand(cmdReader.readCommand()).join().serialize();
                             writer.write(r);
+                        } catch (Exception e) {
+                            writer.write(new RespError(e.getMessage().getBytes()));
+                            break;
                         }
-                    } catch (Exception e) {
-                        //writer.write(new RespError(e.getMessage().getBytes()));
-                        break;
                     }
-
                 }
             } catch (Exception e) {
                 //close();
-//                try {
-//                    writer.write(new RespError(e.getMessage().getBytes()));
-//                } catch (IOException ex) {
-//
-//                }
+                try {
+                    writer.write(new RespError(e.getMessage().getBytes()));
+                } catch (IOException ex) {
 
+                }
                 //throw new RuntimeException("hahaha2");
-
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
