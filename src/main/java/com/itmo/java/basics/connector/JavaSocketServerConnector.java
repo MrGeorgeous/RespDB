@@ -14,6 +14,7 @@ import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.SegmentInitializer;
 import com.itmo.java.basics.initialization.impl.TableInitializer;
 import com.itmo.java.basics.resp.CommandReader;
+import com.itmo.java.client.exception.DatabaseExecutionException;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.RespWriter;
 import com.itmo.java.protocol.model.RespArray;
@@ -139,22 +140,21 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
+            CommandReader cmdReader = new CommandReader(reader, server.getEnvironment());
+            try {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
                     if (cmdReader.hasNextCommand()) {
-                        try {
-                            writer.write(server.executeNextCommand(cmdReader.readCommand()).join().serialize());
-                            //clientSocket.getOutputStream().flush();
-                        } catch (Exception e) {
-                            break;
-                        }
+                        DatabaseCommand cmd = cmdReader.readCommand();
+                        writer.write(server.executeNextCommand(cmd).join().serialize());
                     }
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 //close();
                 throw new RuntimeException("hahaha2");
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
+            } catch (Exception e) {
+
             }
             close();
         }
