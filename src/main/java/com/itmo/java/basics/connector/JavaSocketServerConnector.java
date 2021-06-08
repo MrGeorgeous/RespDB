@@ -9,6 +9,7 @@ import com.itmo.java.basics.console.DatabaseCommand;
 import com.itmo.java.basics.console.DatabaseCommandResult;
 import com.itmo.java.basics.console.ExecutionEnvironment;
 import com.itmo.java.basics.console.impl.ExecutionEnvironmentImpl;
+import com.itmo.java.basics.console.impl.SuccessDatabaseCommandResult;
 import com.itmo.java.basics.initialization.impl.DatabaseInitializer;
 import com.itmo.java.basics.initialization.impl.DatabaseServerInitializer;
 import com.itmo.java.basics.initialization.impl.SegmentInitializer;
@@ -148,11 +149,18 @@ public class JavaSocketServerConnector implements Closeable {
             try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
                     if (cmdReader.hasNextCommand()) {
-                        RespObject r;
+                        DatabaseCommand cmd = cmdReader.readCommand();
+                        RespObject r = new RespError("ahaha".getBytes());
                         try {
-                            r = server.executeNextCommand(cmdReader.readCommand()).get().serialize();
+                            DatabaseCommandResult ro;
+                            //ro = new SuccessDatabaseCommandResult("success".getBytes());
+                            ro = server.executeNextCommand(cmd).join();
+                            if (ro != null) {
+                                r = ro.serialize();
+                            }
+                            //r = ro.serialize();
                             writer.write(r);
-                        } catch (InterruptedException e) {
+                        } catch (Exception e) {
                             //writer.write(new RespError(e.getMessage().getBytes()));
                             break;
                         }
@@ -165,7 +173,9 @@ public class JavaSocketServerConnector implements Closeable {
 //                } catch (IOException ex) {
 //
 //                }
-                throw new RuntimeException("hahaha2");
+
+                //throw new RuntimeException("hahaha2");
+
                 //ignored.printStackTrace();
                 //System.out.println("Failed to process request.");
             }
