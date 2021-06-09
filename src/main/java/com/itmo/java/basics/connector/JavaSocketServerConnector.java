@@ -69,7 +69,7 @@ public class JavaSocketServerConnector implements Closeable {
                     ClientTask task = new ClientTask(s, databaseServer);
                     clientIOWorkers.submit(task);
                 } catch (Exception e) {
-                    throw new RuntimeException("hahaha", e);
+                   //throw new RuntimeException("hahaha", e);
                 }
             }
         });
@@ -131,7 +131,7 @@ public class JavaSocketServerConnector implements Closeable {
                 this.writer = new RespWriter(clientSocket.getOutputStream());
             } catch (Exception e) {
                 close();
-                throw new RuntimeException("hahahah", e);
+                //throw new RuntimeException("hahahah", e);
             }
         }
 
@@ -145,25 +145,31 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            try  {
-
-                    writer.write(new RespError("this is a test to debug".getBytes()));
-            } catch (Exception e) {
-                try {
-                    writer.write(new RespError(e.getMessage().getBytes()));
-                } catch (Exception ignored) {
-
-                }
-            }
             try {
-                clientSocket.close();
+                clientSocket.getOutputStream().write("Hello, world! Я родился!".getBytes());
             } catch (IOException e) {
-                try {
-                    writer.write(new RespError(e.getMessage().getBytes()));
-                } catch (Exception ignored) {
-
-                }
+                e.printStackTrace();
             }
+            this.close();
+
+//            try  {
+//                writer.write(new RespError("this is a test to debug".getBytes()));
+//            } catch (Exception e) {
+//                try {
+//                    writer.write(new RespError(e.getMessage().getBytes()));
+//                } catch (Exception ignored) {
+//
+//                }
+//            }
+//            try {
+//                clientSocket.close();
+//            } catch (IOException e) {
+//                try {
+//                    writer.write(new RespError(e.getMessage().getBytes()));
+//                } catch (Exception ignored) {
+//
+//                }
+//            }
 
             //writer.close();
             //return;
