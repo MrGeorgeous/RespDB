@@ -66,7 +66,8 @@ public class JavaSocketServerConnector implements Closeable {
             while(!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket s = serverSocket.accept();
-                    clientIOWorkers.submit(new ClientTask(s, databaseServer));
+                    ClientTask task = new ClientTask(s, databaseServer);
+                    clientIOWorkers.submit(task);
                 } catch (Exception e) {
                     throw new RuntimeException("hahaha", e);
                 }
@@ -144,7 +145,7 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
+            try  {
 
                     writer.write(new RespError("this is a test to debug".getBytes()));
             } catch (Exception e) {
