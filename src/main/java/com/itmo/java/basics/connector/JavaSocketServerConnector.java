@@ -147,36 +147,36 @@ public class JavaSocketServerConnector implements Closeable {
         public void run() {
 
 
-            RespWriter writer = null;
-            try {
-                writer = new RespWriter(clientSocket.getOutputStream());
-                RespArray arr = new RespReader(clientSocket.getInputStream()).readArray();
-                writer.write(new RespBulkString(arr.asString().getBytes()));
-                writer.close();
-                reader.close();
-                close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-//
-//            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
-//                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
-//
-//                while (reader.hasNextCommand()) {
-//                    //try {
-//                        DatabaseCommand command = reader.readCommand();
-//                        DatabaseCommandResult result = server.executeNextCommand(command).get();
-//                        writer.write(result.serialize());
-//                        clientSocket.getOutputStream().flush();
-//                    //} catch (IOException e) {
-//                    //    break;
-//                    //}
-//                }
-//
-//            } catch (Exception e) {
+//            RespWriter writer = null;
+//            try {
+//                writer = new RespWriter(clientSocket.getOutputStream());
+//                RespArray arr = new RespReader(clientSocket.getInputStream()).readArray();
+//                writer.write(new RespBulkString(arr.asString().getBytes()));
+//                writer.close();
+//                reader.close();
+//                close();
+//            } catch (IOException e) {
 //                e.printStackTrace();
 //            }
+
+
+            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
+                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
+
+                while (reader.hasNextCommand()) {
+                    //try {
+                        DatabaseCommand command = reader.readCommand();
+                        DatabaseCommandResult result = server.executeNextCommand(command).get();
+                        writer.write(result.serialize());
+                        clientSocket.getOutputStream().flush();
+                    //} catch (IOException e) {
+                    //    break;
+                    //}
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
 
         }

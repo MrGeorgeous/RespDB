@@ -31,7 +31,7 @@ public class GetKeyCommand implements DatabaseCommand {
     public GetKeyCommand(ExecutionEnvironment env, List<RespObject> commandArgs) {
         this.environment = env;
         this.commandArgs = commandArgs;
-        if ((this.environment == null) || (this.commandArgs == null) || (this.commandArgs.size() != 5)) {
+        if (/*(this.environment == null) || */ (this.commandArgs == null) || (this.commandArgs.size() != 5)) {
             throw new IllegalArgumentException();
         }
     }
