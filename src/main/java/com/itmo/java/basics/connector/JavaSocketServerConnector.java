@@ -51,9 +51,9 @@ public class JavaSocketServerConnector implements Closeable {
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
         //try {
         this.databaseServer = databaseServer;
-        InetAddress addr = Inet4Address.getByName(config.getHost());
-        this.serverSocket = new ServerSocket(config.getPort(), 50, addr);
-        //this.serverSocket = new ServerSocket(config.getPort());
+        //InetAddress addr = Inet4Address.getByName(config.getHost());
+        //this.serverSocket = new ServerSocket(config.getPort(), 50, addr);
+        this.serverSocket = new ServerSocket(config.getPort());
         //} catch (Exception e) {
         //    throw new IOException("ServerSocket could not be opened.", e);
         //}

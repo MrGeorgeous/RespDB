@@ -61,7 +61,6 @@ public class SetKeyCommand implements DatabaseCommand {
                 } catch (Exception e) {
                     System.out.println("hah");
                 }
-                System.out.println("hah");
                 if (currentValue.isPresent()) {
                     return new SuccessDatabaseCommandResult(currentValue.get());
                 } else {
