@@ -164,7 +164,7 @@ public class JavaSocketServerConnector implements Closeable {
             } catch (Exception e) {
 
             }
-            close();
+            //close();
 
         }
 
