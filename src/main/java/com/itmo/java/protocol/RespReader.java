@@ -1,44 +1,49 @@
 package com.itmo.java.protocol;
 
-import com.itmo.java.protocol.model.RespArray;
-import com.itmo.java.protocol.model.RespBulkString;
-import com.itmo.java.protocol.model.RespCommandId;
-import com.itmo.java.protocol.model.RespError;
-import com.itmo.java.protocol.model.RespObject;
+import com.itmo.java.protocol.model.*;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class RespReader implements AutoCloseable {
-    private DataInputStream inner;
+
+    private InputStream stream;
+    private byte buffer = 0;
 
     /**
      * Специальные символы окончания элемента
      */
     private static final byte CR = '\r';
     private static final byte LF = '\n';
+    private static String CRLF = String.valueOf((char)CR) + String.valueOf((char)LF);
 
     public RespReader(InputStream is) {
-        this.inner = new DataInputStream(new BufferedInputStream(is));
+        this.stream = new DataInputStream(new BufferedInputStream(is));
+        //this.stream = is;
     }
 
     /**
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-        byte[] b = new byte[1];
-        inner.mark(1);
-        int bytesRead = inner.read(b, 0, 1);
-        inner.reset();
+        //ensureNotEnd();
+        if (end()) {
+            return false;
+        }
+        byte r = getNextByte();
+        return r == RespArray.CODE;
+    }
 
-        return (bytesRead != -1) && (b[0] == RespArray.CODE);
+    public boolean hasObject() {
+        if (end()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -49,22 +54,34 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespObject readObject() throws IOException {
-        inner.mark(1);
-        byte code = inner.readByte();
-        inner.reset();
 
-        switch (code) {
-            case RespError.CODE:
-                return readError();
-            case RespBulkString.CODE:
-                return readBulkString();
-            case RespArray.CODE:
-                return readArray();
-            case RespCommandId.CODE:
+        try {
+
+            ensureNotEnd();
+            char code = (char)getNextByte();
+
+            if (code == RespCommandId.CODE) {
                 return readCommandId();
-            default:
-                throw new IOException(String.format("RESP object code '%s' not recognized", code));
+            }
+
+            if (code == RespError.CODE) {
+               return readError();
+            }
+
+            if (code == RespBulkString.CODE) {
+               return readBulkString();
+            }
+
+            if (code == RespArray.CODE) {
+               return readArray();
+            }
+
+        } catch (IOException e) {
+            throw new IOException("RespObject was found corrupted while reading from stream.", e);
         }
+
+        throw new IOException("Unknown RespObject was found.");
+
     }
 
     /**
@@ -74,10 +91,9 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespError readError() throws IOException {
-        validateCode(RespError.CODE);
-        byte[] message = readByteLine();
-
-        return new RespError(message);
+        ensureNotEnd();
+        char code = readCode();
+        return new RespError(readUntilCRLF());
     }
 
     /**
@@ -87,16 +103,19 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespBulkString readBulkString() throws IOException {
-        validateCode(RespBulkString.CODE);
-        int len = readIntLiteral();
-
-        if (len == RespBulkString.NULL_STRING_SIZE) {
+        ensureNotEnd();
+        char code = readCode();
+        int len = readIntToCRLF();
+        if (len == -1) {
             return new RespBulkString(null);
         }
-
-        byte[] data = readByteLineOfLen(len);
-
-        return new RespBulkString(data);
+        byte[] str = readNBytes(len);
+        skipCRLF();
+        if (str.length != len) {
+            throw new IOException("Corrupted bulk string.");
+        }
+        //byte[] str = stream.readNBytes(len);
+        return new RespBulkString(str);
     }
 
     /**
@@ -106,19 +125,15 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespArray readArray() throws IOException {
-        validateCode(RespArray.CODE);
-        int len = readIntLiteral();
-        RespObject[] objects = new RespObject[len];
-
-        for (int i = 0; i < len; ++i) {
-            try {
-                objects[i] = readObject();
-            } catch (EOFException e) {
-                throw new IOException(String.format("Expected '%s' array elements, only received '%s'", len, i));
-            }
+        ensureNotEnd();
+        char code = readCode();
+        int len = readIntToCRLF();
+        //skipCRLF();
+        ArrayList<RespObject> items = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            items.add(readObject());
         }
-
-        return new RespArray(objects);
+        return new RespArray(items.toArray(new RespObject[len]));
     }
 
     /**
@@ -128,88 +143,133 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespCommandId readCommandId() throws IOException {
-        validateCode(RespCommandId.CODE);
-        byte[] bytes = new byte[4];
-        int bytesRead = inner.readNBytes(bytes, 0, 4);
-
-        if (bytesRead != 4) {
-            throw new IOException("Expected a four-byte integer");
-        }
-
-        validateCRLF();
-
-        ByteBuffer buf = ByteBuffer.wrap(bytes);
-        buf.order(ByteOrder.BIG_ENDIAN);
-        int commandId = buf.getInt();
-
+        ensureNotEnd();
+        char code = readCode();
+        int commandId = readInt();
+        skipCRLF();
+        //int commandId = ByteBuffer.wrap(stream.readNBytes(4)).getInt();
         return new RespCommandId(commandId);
     }
 
 
     @Override
     public void close() throws IOException {
-        inner.close();
+       stream.close();
     }
 
-    private void validateCode(byte expectedCode) throws IOException {
-        byte code = inner.readByte();
+    private char readCode() throws IOException {
+        return (char)readNextByte();
+//        char r = scanner.next(".").charAt(0);
+//        scanner.useDelimiter("");
+//        return r;
+    }
 
-        if (code != expectedCode) {
-            throw new IOException(String.format("Expected RESP object code '%s', received '%s'", expectedCode, code));
+    private int readInt() throws IOException {
+        return ByteBuffer.wrap(readNBytes(4)).getInt();
+    }
+
+    private byte[] readNBytes(int N) throws IOException {
+        byte[] n = new byte[N];
+        for (int i = 0; i < N; i++) {
+            n[i] = readNextByte();
+        }
+        return n;
+    }
+
+    private void skipCRLF() throws IOException {
+        String read = "";
+        for (int i = 0; i < CRLF.getBytes().length; i++) {
+           read += (char)readNextByte();
+            //System.out.print(scanner.nextByte());
+        }
+        if (!read.equals(CRLF)) {
+            throw new IOException("Wrong CRLF skip.");
         }
     }
 
-    private byte[] readByteLine() throws IOException {
-        List<Byte> data = new ArrayList<>();
-
-        while (!(data.size() >= 2 && data.get(data.size() - 2) == CR && data.get(data.size() - 1) == LF)) {
-            int inByte = inner.read();
-
-            if (inByte == -1) {
-                throw new IOException("Unexpected EOF when reading line");
-            }
-
-            data.add((byte) inByte);
+    private byte[] readUntilCRLF() throws IOException {
+        byte t = readNextByte();
+        List<Byte> bytes = new ArrayList<Byte>();
+        while (t != LF) {
+            bytes.add(t);
+            t = readNextByte();
         }
-
-        data.remove(data.size() - 1);
-        data.remove(data.size() - 1);
-
-        byte[] res = new byte[data.size()];
-
-        for (int i = 0; i < data.size(); ++i) {
-            res[i] = data.get(i);
+        if ((bytes.size() >= 2) && (bytes.get(bytes.size() - 1) != CR)) {
+            throw new IOException("Wrong CRLF skip.");
         }
-
-        return res;
+        byte[] b = new byte[bytes.size() - 1];
+        for (int i = 0; i < bytes.size() - 1; i++) {
+            b[i] = bytes.get(i);
+        }
+        return b;
     }
 
-    private int readIntLiteral() throws IOException {
-        String literal = new String(readByteLine());
+    private int readIntToCRLF() throws IOException {
+        return Integer.parseInt(new String(readUntilCRLF()));
+        //return ByteBuffer.wrap(readUntilCRLF()).getInt();
+    }
 
+    private byte getNextByte() throws IOException {
+        if (buffer == 0) {
+            buffer = readNextByte(true);
+        }
+        return buffer;
+    }
+
+    private byte readNextByte() throws IOException {
+        return readNextByte(false);
+    }
+
+    private byte readNextByte(boolean suspendEOF) throws IOException {
+        if (buffer != 0) {
+            byte r = buffer;
+            buffer = 0;
+            return r;
+        }
+
+        byte[] b = new byte[1];
+        int bytesRead = stream.read(b, 0, 1);
+
+        if (bytesRead != 1) {
+            buffer = -1;
+            throw new EOFException("End of stream.");
+        }
+
+        return b[0];
+
+//        byte r = -1;
+//        try {
+//            //r = (byte) stream.read();
+//            r = stream.readNBytes(1)[0];
+//        } catch (IOException e) {
+//            buffer = -1;
+//            if (!suspendEOF) {
+//                throw new IOException("Stream has been found corrupted.", e);
+//            }
+//        }
+//        if ((r == -1) && !suspendEOF) {
+//            throw new EOFException("End of file reached.");
+//        }
+//        return r;
+    }
+
+    private boolean end() {
         try {
-            return Integer.parseInt(literal);
-        } catch (NumberFormatException e) {
-            throw new IOException(String.format("Expected valid integer literal, received '%s'", literal), e);
+            return getNextByte() == -1;
+        } catch (Exception e) {
+            return true;
+        }
+        //return stream.available() == 0;
+    }
+
+    private void ensureNotEnd() throws EOFException {
+        if (end()) {
+            throw new EOFException("Empty InputStream.");
         }
     }
 
-    private byte[] readByteLineOfLen(int len) throws IOException {
-        byte[] data = new byte[len];
-        int bytesRead = inner.readNBytes(data, 0, len);
 
-        if (bytesRead != len) {
-            throw new IOException(String.format("Expected line of length '%s', only read '%s'", len, bytesRead));
-        }
 
-        validateCRLF();
 
-        return data;
-    }
 
-    private void validateCRLF() throws IOException {
-        if (inner.read() != CR || inner.read() != LF) {
-            throw new IOException("Expected CRLF");
-        }
-    }
 }
