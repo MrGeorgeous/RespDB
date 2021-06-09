@@ -19,8 +19,8 @@ public class SocketKvsConnection implements KvsConnection {
 
     private ConnectionConfig config;
     private Socket socket = null;
-    private PrintWriter requester = null;
-    private BufferedReader responder = null;
+    private RespWriter writer = null;
+    private RespReader reader = null;
 
     public SocketKvsConnection(ConnectionConfig config) {
         this.config = config;
@@ -31,8 +31,8 @@ public class SocketKvsConnection implements KvsConnection {
                 //    throw new ConnectionException("Empty port in configuration.");
                 //}
                 this.socket = new Socket(config.getHost(), config.getPort());
-                //requester = new PrintWriter(socket.getOutputStream(), true);
-                //responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                this.writer = new RespWriter(socket.getOutputStream());
+                this.reader = new RespReader(socket.getInputStream());
             //}
         } catch (Exception e) {
             throw new IllegalArgumentException("send: Connection socket could not be opened. ", e);
@@ -49,50 +49,22 @@ public class SocketKvsConnection implements KvsConnection {
     @Override
     public synchronized RespObject send(int commandId, RespArray command) throws ConnectionException {
 
+        try {
+            writer.write(command);
+        } catch (IOException e) {
+            throw new ConnectionException("Sending request has failed.", e);
+        }
 
         try {
-            RespWriter rw = new RespWriter(socket.getOutputStream());
-
-
-            //rw.write(new RespArray());
-            rw.write(command);
-
-
-            //BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-//            while(in.a)
-//            String result = "";
-//            String k;
-//            while ((k = in.readLine()) != null) {
-//                result += k + "\r\n";
-//            }
-//            RespReader rr = new RespReader(new ByteArrayInputStream(result.getBytes()));
-
-            //while (socket.getInputStream().available() == 0);
-
-            RespReader reader = new RespReader(socket.getInputStream());
-            //RespReader reader = new RespReader(new ByteArrayInputStream(socket.getInputStream().readAllBytes()));
-            while (socket.isConnected()) {
-                if (reader.hasObject()) {
-
-                    try {
-                        RespObject r = reader.readObject();
-                        System.out.print("RESP_");
-                        r.write(System.out);
-                        System.out.print("_RESP");
-                        return r;
-                    } catch (IOException e) {
-                        throw new ConnectionException("Response has been found corrupted.", e);
-                    }
-
-                }
-            }
-
-            throw new ConnectionException("Did not receive the response.", null);
-
-        } catch (Exception e) {
-            throw new ConnectionException("Processing request failed.", e);
+            RespObject r = reader.readObject();
+            System.out.print("RESP_");
+            r.write(System.out);
+            System.out.print("_RESP");
+            return r;
+        } catch (IOException e) {
+            throw new ConnectionException("Response has been found corrupted.", e);
         }
+
     }
 
     /**
@@ -104,11 +76,11 @@ public class SocketKvsConnection implements KvsConnection {
             if (socket != null) {
                 socket.close();
             }
-            if (requester != null) {
-                requester.close();
+            if (writer != null) {
+                writer.close();
             }
-            if (responder != null) {
-                responder.close();
+            if (reader != null) {
+                reader.close();
             }
         } catch (Exception ignored) {}
     }
