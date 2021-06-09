@@ -115,6 +115,8 @@ public class JavaSocketServerConnector implements Closeable {
 
         private Socket clientSocket = null;
         private DatabaseServer server = null;
+        private RespReader reader = null;
+        private RespWriter writer = null;
 
         /**
          * @param client клиентский сокет
@@ -123,6 +125,13 @@ public class JavaSocketServerConnector implements Closeable {
         public ClientTask(Socket client, DatabaseServer server) {
             this.clientSocket = client;
             this.server = server;
+            try {
+                this.reader = new RespReader(clientSocket.getInputStream());
+                this.writer = new RespWriter(clientSocket.getOutputStream());
+            } catch (Exception e) {
+                close();
+                //throw new RuntimeException("hahahah", e);
+            }
         }
 
         /**
@@ -135,30 +144,48 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            try (CommandReader cmdReader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
-                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
-
-                while (!clientSocket.isClosed() && !Thread.currentThread().isInterrupted()) {
+            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
+                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
                     if (cmdReader.hasNextCommand()) {
-                        try {
-                            DatabaseCommand cmd = cmdReader.readCommand();
-                            //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
-                            DatabaseCommandResult r = server.executeNextCommand(cmd).get();
-                            writer.write(r.serialize());
-                        } catch (IOException e) {
-                            break;
-                        }
-                    } else {
+                        DatabaseCommand cmd = cmdReader.readCommand();
+                        //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
+                        DatabaseCommandResult r = server.executeNextCommand(cmd).join();
+                        writer.write(r.serialize());
+                    }
+                    else {
                         break;
                     }
-                    //close();
                 }
-
             } catch (Exception e) {
-                close();
+                //close();
                 throw new RuntimeException("hahaha2", e);
             }
             close();
+
+//            try (CommandReader cmdReader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
+//                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
+//
+//                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
+//                    if (cmdReader.hasNextCommand()) {
+//                        try {
+//                            DatabaseCommand cmd = cmdReader.readCommand();
+//                            //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
+//                            DatabaseCommandResult r = server.executeNextCommand(cmd).get();
+//                            writer.write(r.serialize());
+//                        } catch (IOException e) {
+//                            break;
+//                        }
+//                    } else {
+//                        break;
+//                    }
+//                    //close();
+//                }
+//
+//            } catch (Exception e) {
+//                //close();
+//                throw new RuntimeException("hahaha2", e);
+//            }
+//            close();
 
         }
 
@@ -167,24 +194,24 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void close() {
-//            try {
-//                if (reader != null) {
-//                    reader.close();
-//                }
-//            } catch (Exception e) {
-//
-//            }
-//            try {
-//                if (writer != null) {
-//                    writer.close();
-//                }
-//            } catch (Exception e) {
-//
-//            }
             try {
-                if (!clientSocket.isClosed()) {
-                    clientSocket.close();
+                if (reader != null) {
+                    reader.close();
                 }
+            } catch (Exception e) {
+
+            }
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (Exception e) {
+
+            }
+            try {
+                //if (!clientSocket.isClosed()) {
+                    clientSocket.close();
+                //}
             } catch (Exception e) {
                 //System.out.println("Client socket was not closed.");
             }
