@@ -151,17 +151,17 @@ public class JavaSocketServerConnector implements Closeable {
             }
             return;
 
-            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
-
-                while (cmdReader.hasNextCommand()) {
-                    DatabaseCommand command = cmdReader.readCommand();
-                    DatabaseCommandResult result = server.executeNextCommand(command).get();
-                    writer.write(result.serialize());
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
+//
+//                while (cmdReader.hasNextCommand()) {
+//                    DatabaseCommand command = cmdReader.readCommand();
+//                    DatabaseCommandResult result = server.executeNextCommand(command).get();
+//                    writer.write(result.serialize());
+//                }
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
 
 //            CommandReader cmdReader = new CommandReader(reader, server.getEnvironment());
 //            try {
