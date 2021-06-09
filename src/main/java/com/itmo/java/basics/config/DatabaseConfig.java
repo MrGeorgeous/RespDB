@@ -8,10 +8,10 @@ public class DatabaseConfig {
 
     protected String workingPath;
 
-    public DatabaseConfig() {
-        this.workingPath = DEFAULT_WORKING_PATH;
-        //this.workingPath = Paths.get("").toAbsolutePath().resolve(DEFAULT_WORKING_PATH).toString();
-    }
+//    public DatabaseConfig() {
+//        this.workingPath = DEFAULT_WORKING_PATH;
+//        //this.workingPath = Paths.get("").toAbsolutePath().resolve(DEFAULT_WORKING_PATH).toString();
+//    }
 
     public DatabaseConfig(String workingPath) {
         this.workingPath = workingPath;

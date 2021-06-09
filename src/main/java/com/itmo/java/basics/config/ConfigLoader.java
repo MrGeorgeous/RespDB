@@ -59,7 +59,7 @@ public class ConfigLoader {
         if (workingPath != null) {
             databaseConfig = new DatabaseConfig(workingPath);
         } else {
-            databaseConfig = new DatabaseConfig();
+            databaseConfig = new DatabaseConfig(DatabaseConfig.DEFAULT_WORKING_PATH);
         }
 
         HashMap<String, String> serverSettings = new HashMap<>() {{
