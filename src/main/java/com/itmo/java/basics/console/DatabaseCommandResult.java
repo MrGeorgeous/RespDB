@@ -4,6 +4,8 @@ import com.itmo.java.basics.console.impl.FailedDatabaseCommandResult;
 import com.itmo.java.basics.console.impl.SuccessDatabaseCommandResult;
 import com.itmo.java.protocol.model.RespObject;
 
+import java.util.Arrays;
+
 public interface DatabaseCommandResult extends DatabaseApiSerializable {
 
     /**
@@ -34,7 +36,10 @@ public interface DatabaseCommandResult extends DatabaseApiSerializable {
      * @return результат команды, при выполнении которой произошла ошибка
      */
     static DatabaseCommandResult error(Exception exception) {
-        return new FailedDatabaseCommandResult(exception.getMessage());
+        if (exception.getMessage() != null) {
+            return new FailedDatabaseCommandResult(exception.getMessage());
+        }
+        return new FailedDatabaseCommandResult(Arrays.toString(exception.getStackTrace()));
     }
 
     /**

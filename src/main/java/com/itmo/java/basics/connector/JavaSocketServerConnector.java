@@ -64,11 +64,11 @@ public class JavaSocketServerConnector implements Closeable {
     public void start() {
 
         connectionAcceptorExecutor.submit(() -> {
-            while(true) {
+            while(!Thread.currentThread().isInterrupted()) {
                 try {
-//                    Socket s = serverSocket.accept();
-//                    ClientTask task = new ClientTask(s, databaseServer);
-                    clientIOWorkers.submit(new ClientTask(serverSocket.accept(), databaseServer));
+                    Socket s = serverSocket.accept();
+                    ClientTask task = new ClientTask(s, databaseServer);
+                    clientIOWorkers.submit(task);
                 } catch (Exception e) {
                    throw new RuntimeException("hahaha", e);
                 }
@@ -138,8 +138,8 @@ public class JavaSocketServerConnector implements Closeable {
             try (CommandReader cmdReader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
                  RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
 
-                //while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-                    while (cmdReader.hasNextCommand()) {
+                while (!clientSocket.isClosed() && !Thread.currentThread().isInterrupted()) {
+                    if (cmdReader.hasNextCommand()) {
                         try {
                             DatabaseCommand cmd = cmdReader.readCommand();
                             //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
@@ -148,11 +148,14 @@ public class JavaSocketServerConnector implements Closeable {
                         } catch (IOException e) {
                             break;
                         }
+                    } else {
+                        break;
                     }
                     //close();
-                //}
+                }
 
             } catch (Exception e) {
+                close();
                 throw new RuntimeException("hahaha2", e);
             }
             close();
