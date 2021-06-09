@@ -22,6 +22,8 @@ import com.itmo.java.protocol.model.RespError;
 import com.itmo.java.protocol.model.RespObject;
 
 import java.io.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -47,8 +49,10 @@ public class JavaSocketServerConnector implements Closeable {
      */
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
         //try {
-            this.databaseServer = databaseServer;
-            this.serverSocket = new ServerSocket(config.getPort());
+        this.databaseServer = databaseServer;
+        InetAddress addr = Inet4Address.getByName(config.getHost());
+        this.serverSocket = new ServerSocket(config.getPort(), 50, addr);
+        //this.serverSocket = new ServerSocket(config.getPort());
         //} catch (Exception e) {
         //    throw new IOException("ServerSocket could not be opened.", e);
         //}
