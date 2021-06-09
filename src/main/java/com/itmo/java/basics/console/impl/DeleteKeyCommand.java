@@ -50,9 +50,13 @@ public class DeleteKeyCommand implements DatabaseCommand {
             String key = this.commandArgs.get(DatabaseCommandArgPositions.KEY.getPositionIndex()).asString();
             Optional<Database> db = environment.getDatabase(dbName);
             if (db.isPresent()) {
-                Optional<byte[]> value = db.get().read(tableName, key);
-                db.get().delete(tableName, key);
-                return new SuccessDatabaseCommandResult(value.get());
+                if (key != null) {
+                    Optional<byte[]> value = db.get().read(tableName, key);
+                    db.get().delete(tableName, key);
+                    return new SuccessDatabaseCommandResult(value.get());
+                } else {
+                    return new SuccessDatabaseCommandResult(null);
+                }
             } else {
                 return new FailedDatabaseCommandResult("Database '" + dbName + "' does not exist.");
             }
