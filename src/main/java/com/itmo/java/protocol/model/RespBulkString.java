@@ -50,8 +50,8 @@ public class RespBulkString implements RespObject {
         if (!isEmpty()) {
             r = (char)CODE + String.valueOf(data.length) + "\r\n" + new String(data) + "\r\n";
         }
-        throw new IOException("Have just tried to send: " + r);
-        //os.write(r.getBytes());
+        //throw new IOException("Have just tried to send: " + r);
+        os.write(r.getBytes());
     }
 
     private boolean isEmpty() {

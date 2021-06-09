@@ -36,7 +36,7 @@ public class CommandReader implements AutoCloseable {
         try  {
             args = respReader.readArray().getObjects();
         } catch (Exception e) {
-            throw new IllegalArgumentException("No next command presented in Resp", e);
+            throw new IOException("No next command presented in Resp", e);
         }
         try {
             RespObject commandId = (RespCommandId) args.get(DatabaseCommandArgPositions.COMMAND_ID.getPositionIndex());

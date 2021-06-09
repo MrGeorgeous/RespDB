@@ -57,7 +57,7 @@ public class RespReader implements AutoCloseable {
 
         try {
 
-            //ensureNotEnd();
+            ensureNotEnd();
             char code = (char)getNextByte();
 
             if (code == RespCommandId.CODE) {
@@ -183,7 +183,11 @@ public class RespReader implements AutoCloseable {
             //System.out.print(scanner.nextByte());
         }
         if (!read.equals(CRLF)) {
-            throw new IOException("Wrong CRLF skip.");
+            String s = new String(readUntilCRLF());
+            if (!s.equals("")) {
+                throw new IOException("Wrong CRLF skip.");
+            }
+            //throw new IOException("Wrong CRLF skip.");
         }
     }
 

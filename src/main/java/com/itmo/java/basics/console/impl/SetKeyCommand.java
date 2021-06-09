@@ -52,7 +52,16 @@ public class SetKeyCommand implements DatabaseCommand {
             Optional<Database> db = environment.getDatabase(dbName);
             if (db.isPresent()) {
                 Optional<byte[]> currentValue = db.get().read(tableName, key);
-                db.get().write(tableName, key, value.getBytes());
+                try {
+                    if (value != null) {
+                        db.get().write(tableName, key, value.getBytes());
+                    } else {
+                        db.get().write(tableName, key, null);
+                    }
+                } catch (Exception e) {
+                    System.out.println("hah");
+                }
+                System.out.println("hah");
                 if (currentValue.isPresent()) {
                     return new SuccessDatabaseCommandResult(currentValue.get());
                 } else {

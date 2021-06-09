@@ -149,10 +149,14 @@ public class JavaSocketServerConnector implements Closeable {
                  RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
 
                 while (reader.hasNextCommand()) {
-                    DatabaseCommand command = reader.readCommand();
-                    DatabaseCommandResult result = server.executeNextCommand(command).get();
-                    writer.write(result.serialize());
-                    //clientSocket.getOutputStream().flush();
+                    //try {
+                        DatabaseCommand command = reader.readCommand();
+                        DatabaseCommandResult result = server.executeNextCommand(command).get();
+                        writer.write(result.serialize());
+                        clientSocket.getOutputStream().flush();
+                    //} catch (IOException e) {
+                    //    break;
+                    //}
                 }
 
             } catch (Exception e) {
