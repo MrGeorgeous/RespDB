@@ -144,27 +144,23 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            CommandReader cmdReader = new CommandReader(reader, server.getEnvironment());
-            try {
+            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
                 while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
                     if (cmdReader.hasNextCommand()) {
                         DatabaseCommand cmd = cmdReader.readCommand();
+                        //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
                         DatabaseCommandResult r = server.executeNextCommand(cmd).join();
                         writer.write(r.serialize());
                     }
-//                    else {
-//                        break;
-//                    }
+                    else {
+                        break;
+                    }
                 }
-            } catch (IOException e) {
-                //close();
-                throw new RuntimeException("hahaha2");
-                //ignored.printStackTrace();
-                //System.out.println("Failed to process request.");
             } catch (Exception e) {
-
+                //close();
+                throw new RuntimeException("hahaha2", e);
             }
-            //close();
+            close();
 
         }
 
