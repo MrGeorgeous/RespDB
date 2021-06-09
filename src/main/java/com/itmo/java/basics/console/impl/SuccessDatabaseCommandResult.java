@@ -17,7 +17,11 @@ public class SuccessDatabaseCommandResult implements DatabaseCommandResult {
 
     @Override
     public String getPayLoad() {
-        return (new RespBulkString(message)).asString();
+        if ((message == null) || (message.length == 0)) {
+            return null;
+        } else {
+            return new String(message);
+        }
     }
 
     @Override

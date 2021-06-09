@@ -24,7 +24,11 @@ public class FailedDatabaseCommandResult implements DatabaseCommandResult {
      */
     @Override
     public String getPayLoad() {
-        return (new RespError(message)).asString();
+        if (message == null) {
+            return null;
+        } else {
+            return new String(message);
+        }
     }
 
     @Override

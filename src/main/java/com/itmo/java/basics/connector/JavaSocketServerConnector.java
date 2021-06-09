@@ -144,23 +144,37 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
-                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-                    if (cmdReader.hasNextCommand()) {
-                        DatabaseCommand cmd = cmdReader.readCommand();
-                        //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
-                        DatabaseCommandResult r = server.executeNextCommand(cmd).get();
-                        writer.write(r.serialize());
-                    }
-                    else {
-                        break;
-                    }
+            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
+                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
+
+                while (reader.hasNextCommand()) {
+                    DatabaseCommand command = reader.readCommand();
+                    DatabaseCommandResult result = server.executeNextCommand(command).get();
+                    writer.write(result.serialize());
+                    clientSocket.getOutputStream().flush();
                 }
+
             } catch (Exception e) {
-                //close();
-                throw new RuntimeException("hahaha2", e);
+                e.printStackTrace();
             }
-            close();
+
+//            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
+//                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
+//                    if (cmdReader.hasNextCommand()) {
+//                        DatabaseCommand cmd = cmdReader.readCommand();
+//                        //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
+//                        DatabaseCommandResult r = server.executeNextCommand(cmd).get();
+//                        writer.write(r.serialize());
+//                    }
+//                    else {
+//                        break;
+//                    }
+//                }
+//            } catch (Exception e) {
+//                //close();
+//                throw new RuntimeException("hahaha2", e);
+//            }
+//            close();
 
 //            try (CommandReader cmdReader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
 //                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
