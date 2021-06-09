@@ -144,12 +144,28 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            try {
-                writer.write(new RespError("this is a test to debug".getBytes()));
-            } catch (IOException e) {
-                e.printStackTrace();
+            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
+
+                    writer.write(new RespError("this is a test to debug".getBytes()));
+            } catch (Exception e) {
+                try {
+                    writer.write(new RespError(e.getMessage().getBytes()));
+                } catch (Exception ignored) {
+
+                }
             }
-            return;
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                try {
+                    writer.write(new RespError(e.getMessage().getBytes()));
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            //writer.close();
+            //return;
 
 //            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
 //
