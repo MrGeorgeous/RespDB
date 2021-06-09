@@ -50,7 +50,7 @@ public class JavaSocketServerConnector implements Closeable {
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
         //try {
         this.databaseServer = databaseServer;
-        this.serverSocket = new ServerSocket(config.getPort());
+        this.serverSocket = new ServerSocket(config.getPort(), 400);
         //this.serverSocket = new ServerSocket(config.getPort());
         //} catch (Exception e) {
         //    throw new IOException("ServerSocket could not be opened.", e);
