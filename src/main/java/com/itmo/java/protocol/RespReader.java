@@ -57,7 +57,7 @@ public class RespReader implements AutoCloseable {
 
         try {
 
-            ensureNotEnd();
+            //ensureNotEnd();
             char code = (char)getNextByte();
 
             if (code == RespCommandId.CODE) {
