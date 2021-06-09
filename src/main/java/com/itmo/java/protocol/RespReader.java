@@ -106,7 +106,7 @@ public class RespReader implements AutoCloseable {
         ensureNotEnd();
         char code = readCode();
         int len = readIntToCRLF();
-        if (len == -1) {
+        if (len == RespBulkString.NULL_STRING_SIZE) {
             return new RespBulkString(null);
         }
         byte[] str = readNBytes(len);

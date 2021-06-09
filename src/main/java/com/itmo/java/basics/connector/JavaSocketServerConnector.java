@@ -51,7 +51,7 @@ public class JavaSocketServerConnector implements Closeable {
         //try {
         this.databaseServer = databaseServer;
         InetAddress addr = Inet4Address.getByName(config.getHost());
-        this.serverSocket = new ServerSocket(config.getPort(), 400, addr);
+        this.serverSocket = new ServerSocket(config.getPort(), 50, addr);
         //this.serverSocket = new ServerSocket(config.getPort());
         //} catch (Exception e) {
         //    throw new IOException("ServerSocket could not be opened.", e);
@@ -70,7 +70,8 @@ public class JavaSocketServerConnector implements Closeable {
                     ClientTask task = new ClientTask(s, databaseServer);
                     clientIOWorkers.submit(task);
                 } catch (Exception e) {
-                   throw new RuntimeException("hahaha", e);
+                    break;
+                    //throw new RuntimeException("hahaha", e);
                 }
             }
         });
