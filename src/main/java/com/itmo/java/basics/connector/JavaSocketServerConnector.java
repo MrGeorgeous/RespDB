@@ -152,7 +152,7 @@ public class JavaSocketServerConnector implements Closeable {
                     DatabaseCommand command = reader.readCommand();
                     DatabaseCommandResult result = server.executeNextCommand(command).get();
                     writer.write(result.serialize());
-                    clientSocket.getOutputStream().flush();
+                    //clientSocket.getOutputStream().flush();
                 }
 
             } catch (Exception e) {
