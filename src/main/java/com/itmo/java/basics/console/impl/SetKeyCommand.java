@@ -53,7 +53,7 @@ public class SetKeyCommand implements DatabaseCommand {
             if (db.isPresent()) {
                 Optional<byte[]> currentValue = db.get().read(tableName, key);
                 try {
-                    if (value != null) {
+                    if ((value != null) && (value.length() != 0)) {
                         db.get().write(tableName, key, value.getBytes());
                     } else {
                         db.get().write(tableName, key, null);
