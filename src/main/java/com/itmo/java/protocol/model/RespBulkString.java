@@ -54,7 +54,13 @@ public class RespBulkString implements RespObject {
     }
 
     private boolean isEmpty() {
-        return (data == null) || (data.length == 0);
+        if (data == null) {
+            return true;
+        }
+        if (data.length == 0) {
+            return true;
+        }
+        return false;
     }
 
 }
