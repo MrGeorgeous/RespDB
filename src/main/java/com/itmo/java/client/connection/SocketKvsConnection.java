@@ -26,16 +26,16 @@ public class SocketKvsConnection implements KvsConnection {
         this.config = config;
 
         try {
-            if ((this.socket == null) || (!this.socket.isConnected())) {
+            //if ((this.socket == null) || (!this.socket.isConnected())) {
                 //if (config.getPort() == null) {
                 //    throw new ConnectionException("Empty port in configuration.");
                 //}
                 this.socket = new Socket(config.getHost(), config.getPort());
                 //requester = new PrintWriter(socket.getOutputStream(), true);
                 //responder = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            }
+            //}
         } catch (Exception e) {
-            throw new IllegalArgumentException("send: Connection socket could not be opened. ", e);
+            //throw new IllegalArgumentException("send: Connection socket could not be opened. ", e);
         }
 
     }

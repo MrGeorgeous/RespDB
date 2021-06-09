@@ -74,6 +74,7 @@ public class JavaSocketServerConnector implements Closeable {
                         e.printStackTrace();
                     }
                     s.close();
+
 //                    ClientTask task = new ClientTask(s, databaseServer);
 //                    clientIOWorkers.submit(task);
                 } catch (Exception e) {
