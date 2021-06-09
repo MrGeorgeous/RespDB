@@ -60,14 +60,14 @@ public class JavaSocketServerConnector implements Closeable {
     public void start() {
 
         connectionAcceptorExecutor.submit(() -> {
-            //while(!Thread.currentThread().isInterrupted()) {
-                try {
+            while(true /*!Thread.currentThread().isInterrupted()*/) {
+//                try {
                     Socket s = serverSocket.accept();
                     clientIOWorkers.submit(new ClientTask(s, databaseServer));
-                } catch (Exception e) {
-                    throw new RuntimeException("hahaha", e);
-                }
-            //}
+//                } catch (Exception e) {
+//                    throw new RuntimeException("hahaha", e);
+//                }
+            }
         });
 
 
@@ -140,27 +140,40 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-            CommandReader cmdReader = new CommandReader(reader, server.getEnvironment());
-            try {
-                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-                    if (cmdReader.hasNextCommand()) {
-                        DatabaseCommand cmd = cmdReader.readCommand();
-                        DatabaseCommandResult r = server.executeNextCommand(cmd).join();
-                        writer.write(r.serialize());
-                    }
-//                    else {
-//                        break;
-//                    }
-                }
-            } catch (IOException e) {
-                //close();
-                throw new RuntimeException("hahaha2");
-                //ignored.printStackTrace();
-                //System.out.println("Failed to process request.");
-            } catch (Exception e) {
 
+            try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
+
+                while (cmdReader.hasNextCommand()) {
+                    DatabaseCommand command = cmdReader.readCommand();
+                    DatabaseCommandResult result = server.executeNextCommand(command).get();
+                    writer.write(result.serialize());
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            close();
+
+//            CommandReader cmdReader = new CommandReader(reader, server.getEnvironment());
+//            try {
+//                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
+//                    if (cmdReader.hasNextCommand()) {
+//                        DatabaseCommand cmd = cmdReader.readCommand();
+//                        DatabaseCommandResult r = server.executeNextCommand(cmd).join();
+//                        writer.write(r.serialize());
+//                    }
+////                    else {
+////                        break;
+////                    }
+//                }
+//            } catch (IOException e) {
+//                //close();
+//                throw new RuntimeException("hahaha2");
+//                //ignored.printStackTrace();
+//                //System.out.println("Failed to process request.");
+//            } catch (Exception e) {
+//
+//            }
+//            close();
         }
 
         /**
