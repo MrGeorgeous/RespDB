@@ -144,14 +144,19 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
+            try {
+                writer.write(new RespError("this is a test to debug".getBytes()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+
             try (CommandReader cmdReader = new CommandReader(reader, server.getEnvironment())) {
 
                 while (cmdReader.hasNextCommand()) {
-                    writer.write(new RespError("this is a test to debug".getBytes()));
-
-//                    DatabaseCommand command = cmdReader.readCommand();
-//                    DatabaseCommandResult result = server.executeNextCommand(command).get();
-//                    writer.write(result.serialize());
+                    DatabaseCommand command = cmdReader.readCommand();
+                    DatabaseCommandResult result = server.executeNextCommand(command).get();
+                    writer.write(result.serialize());
                 }
 
             } catch (Exception e) {
