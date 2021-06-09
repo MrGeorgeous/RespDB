@@ -226,20 +226,31 @@ public class RespReader implements AutoCloseable {
             buffer = 0;
             return r;
         }
-        byte r = -1;
-        try {
-            r = (byte) stream.read();
-            //r = stream.readNBytes(1)[0];
-        } catch (IOException e) {
+
+        byte[] b = new byte[1];
+        int bytesRead = stream.read(b, 0, 1);
+
+        if (bytesRead != 1) {
             buffer = -1;
-            if (!suspendEOF) {
-                throw new IOException("Stream has been found corrupted.", e);
-            }
+            throw new EOFException("End of stream.");
         }
-        if ((r == -1) && !suspendEOF) {
-            throw new EOFException("End of file reached.");
-        }
-        return r;
+
+        return b[0];
+
+//        byte r = -1;
+//        try {
+//            //r = (byte) stream.read();
+//            r = stream.readNBytes(1)[0];
+//        } catch (IOException e) {
+//            buffer = -1;
+//            if (!suspendEOF) {
+//                throw new IOException("Stream has been found corrupted.", e);
+//            }
+//        }
+//        if ((r == -1) && !suspendEOF) {
+//            throw new EOFException("End of file reached.");
+//        }
+//        return r;
     }
 
     private boolean end() {
