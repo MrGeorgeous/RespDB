@@ -18,6 +18,7 @@ import com.itmo.java.client.exception.DatabaseExecutionException;
 import com.itmo.java.protocol.RespReader;
 import com.itmo.java.protocol.RespWriter;
 import com.itmo.java.protocol.model.RespArray;
+import com.itmo.java.protocol.model.RespBulkString;
 import com.itmo.java.protocol.model.RespError;
 import com.itmo.java.protocol.model.RespObject;
 
@@ -145,66 +146,38 @@ public class JavaSocketServerConnector implements Closeable {
         @Override
         public void run() {
 
-            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
-                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
 
-                while (reader.hasNextCommand()) {
-                    //try {
-                        DatabaseCommand command = reader.readCommand();
-                        DatabaseCommandResult result = server.executeNextCommand(command).get();
-                        writer.write(result.serialize());
-                        clientSocket.getOutputStream().flush();
-                    //} catch (IOException e) {
-                    //    break;
-                    //}
-                }
-
-            } catch (Exception e) {
+            RespWriter writer = null;
+            try {
+                writer = new RespWriter(clientSocket.getOutputStream());
+                RespArray arr = new RespReader(clientSocket.getInputStream()).readArray();
+                writer.write(new RespBulkString(arr.asString().getBytes()));
+                writer.close();
+                reader.close();
+                close();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-//            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
-//                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-//                    if (cmdReader.hasNextCommand()) {
-//                        DatabaseCommand cmd = cmdReader.readCommand();
-//                        //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
-//                        DatabaseCommandResult r = server.executeNextCommand(cmd).get();
-//                        writer.write(r.serialize());
-//                    }
-//                    else {
-//                        break;
-//                    }
-//                }
-//            } catch (Exception e) {
-//                //close();
-//                throw new RuntimeException("hahaha2", e);
-//            }
-//            close();
-
-//            try (CommandReader cmdReader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
+//
+//            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
 //                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
 //
-//                while (clientSocket.isConnected() && !Thread.currentThread().isInterrupted()) {
-//                    if (cmdReader.hasNextCommand()) {
-//                        try {
-//                            DatabaseCommand cmd = cmdReader.readCommand();
-//                            //DatabaseCommandResult r = DatabaseCommandResult.success("success".getBytes());
-//                            DatabaseCommandResult r = server.executeNextCommand(cmd).get();
-//                            writer.write(r.serialize());
-//                        } catch (IOException e) {
-//                            break;
-//                        }
-//                    } else {
-//                        break;
-//                    }
-//                    //close();
+//                while (reader.hasNextCommand()) {
+//                    //try {
+//                        DatabaseCommand command = reader.readCommand();
+//                        DatabaseCommandResult result = server.executeNextCommand(command).get();
+//                        writer.write(result.serialize());
+//                        clientSocket.getOutputStream().flush();
+//                    //} catch (IOException e) {
+//                    //    break;
+//                    //}
 //                }
 //
 //            } catch (Exception e) {
-//                //close();
-//                throw new RuntimeException("hahaha2", e);
+//                e.printStackTrace();
 //            }
-//            close();
+
 
         }
 
