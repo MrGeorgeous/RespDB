@@ -73,7 +73,7 @@ public class SocketKvsConnection implements KvsConnection {
             RespReader reader = new RespReader(socket.getInputStream());
             //RespReader reader = new RespReader(new ByteArrayInputStream(socket.getInputStream().readAllBytes()));
             while (socket.isConnected()) {
-                if (reader.hasObject()) {
+                //if (reader.hasObject()) {
 
                     try {
                         RespObject r = reader.readObject();
@@ -85,7 +85,7 @@ public class SocketKvsConnection implements KvsConnection {
                         throw new ConnectionException("Response has been found corrupted.", e);
                     }
 
-                }
+                //}
             }
 
             throw new ConnectionException("Did not receive the response.", null);

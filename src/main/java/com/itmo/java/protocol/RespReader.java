@@ -91,7 +91,7 @@ public class RespReader implements AutoCloseable {
         int len = readIntLiteral();
 
         if (len == RespBulkString.NULL_STRING_SIZE) {
-            return RespBulkString.NULL_STRING;
+            return new RespBulkString(null);
         }
 
         byte[] data = readByteLineOfLen(len);
