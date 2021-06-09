@@ -2,9 +2,7 @@ package com.itmo.java.protocol;
 
 import com.itmo.java.protocol.model.*;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,14 +23,15 @@ public class RespReader implements AutoCloseable {
     private static String CRLF = String.valueOf((char)CR) + String.valueOf((char)LF);
 
     public RespReader(InputStream is) {
-        this.stream = is;
+        this.stream = new DataInputStream(new BufferedInputStream(is));
+        //this.stream = is;
     }
 
     /**
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-//        ensureNotEnd();
+        //ensureNotEnd();
         if (end()) {
             return false;
         }
