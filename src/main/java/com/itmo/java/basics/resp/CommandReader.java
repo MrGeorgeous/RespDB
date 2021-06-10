@@ -36,17 +36,15 @@ public class CommandReader implements AutoCloseable {
         try  {
             args = respReader.readArray().getObjects();
         } catch (Exception e) {
-            throw new IOException("No next command presented in Resp", e);
+            throw new IOException("No next Resp command presented.", e);
         }
-        RespObject commandId;
-        String commandName;
         try {
-            commandId = (RespCommandId) args.get(DatabaseCommandArgPositions.COMMAND_ID.getPositionIndex());
-            commandName = args.get(DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString();
+            RespObject commandId = (RespCommandId) args.get(DatabaseCommandArgPositions.COMMAND_ID.getPositionIndex());
+            String commandName = args.get(DatabaseCommandArgPositions.COMMAND_NAME.getPositionIndex()).asString();
+            return DatabaseCommands.valueOf(commandName).getCommand(environment, args);
         } catch (Exception e) {
             throw new IllegalArgumentException("Given array does not contain commandId and commandName.", e);
         }
-        return DatabaseCommands.valueOf(commandName).getCommand(environment, args);
     }
 
     @Override

@@ -21,7 +21,6 @@ public class ConfigLoader {
      */
     public ConfigLoader() {
         this.configPath = "server.properties";
-        //this.configPath = Paths.get("server.properties").toAbsolutePath().toString();
     }
 
     /**

@@ -49,30 +49,20 @@ public class JavaSocketServerConnector implements Closeable {
      * Стартует сервер. По аналогии с сокетом открывает коннекшн в конструкторе.
      */
     public JavaSocketServerConnector(DatabaseServer databaseServer, ServerConfig config) throws IOException {
-        //try {
         this.databaseServer = databaseServer;
-        //InetAddress addr = Inet4Address.getByName(config.getHost());
-        //this.serverSocket = new ServerSocket(config.getPort(), 50, addr);
         this.serverSocket = new ServerSocket(config.getPort());
-        //} catch (Exception e) {
-        //    throw new IOException("ServerSocket could not be opened.", e);
-        //}
     }
 
      /**
      * Начинает слушать заданный порт, начинает аксептить клиентские сокеты. На каждый из них начинает клиентскую таску
      */
     public void start() {
-
         connectionAcceptorExecutor.submit(() -> {
             while(!Thread.currentThread().isInterrupted()) {
                 try {
-                    Socket s = serverSocket.accept();
-                    ClientTask task = new ClientTask(s, databaseServer);
-                    clientIOWorkers.submit(task);
+                    clientIOWorkers.submit(new ClientTask(serverSocket.accept(), databaseServer));
                 } catch (Exception e) {
                     break;
-                    //throw new RuntimeException("hahaha", e);
                 }
             }
         });
@@ -88,8 +78,7 @@ public class JavaSocketServerConnector implements Closeable {
         clientIOWorkers.shutdownNow();
         try {
             serverSocket.close();
-        } catch (Exception e) {
-
+        } catch (Exception ignored) {
         }
     }
 
@@ -132,7 +121,7 @@ public class JavaSocketServerConnector implements Closeable {
                 this.writer = new RespWriter(clientSocket.getOutputStream());
             } catch (Exception e) {
                 close();
-                //throw new RuntimeException("hahahah", e);
+                throw new RuntimeException("I/O could not be opened with client socket.", e);
             }
         }
 
@@ -145,40 +134,14 @@ public class JavaSocketServerConnector implements Closeable {
          */
         @Override
         public void run() {
-
-
-//            RespWriter writer = null;
-//            try {
-//                writer = new RespWriter(clientSocket.getOutputStream());
-//                RespArray arr = new RespReader(clientSocket.getInputStream()).readArray();
-//                writer.write(new RespBulkString(arr.asString().getBytes()));
-//                writer.close();
-//                reader.close();
-//                close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
-
-            try (CommandReader reader = new CommandReader(new RespReader(clientSocket.getInputStream()), server.getEnv());
-                 RespWriter writer = new RespWriter(clientSocket.getOutputStream())) {
-
-                while (reader.hasNextCommand()) {
-                    //try {
-                        DatabaseCommand command = reader.readCommand();
-                        DatabaseCommandResult result = server.executeNextCommand(command).get();
-                        writer.write(result.serialize());
-                        clientSocket.getOutputStream().flush();
-                    //} catch (IOException e) {
-                    //    break;
-                    //}
+            try (CommandReader cmdReader = new CommandReader(reader, server.getEnv())) {
+                while (cmdReader.hasNextCommand()) {
+                    DatabaseCommand command = cmdReader.readCommand();
+                    writer.write(server.executeNextCommand(command).join().serialize());
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
         }
 
         /**
@@ -190,22 +153,17 @@ public class JavaSocketServerConnector implements Closeable {
                 if (reader != null) {
                     reader.close();
                 }
-            } catch (Exception e) {
-
+            } catch (Exception ignored) {
             }
             try {
                 if (writer != null) {
                     writer.close();
                 }
-            } catch (Exception e) {
-
+            } catch (Exception ignored) {
             }
             try {
-                //if (!clientSocket.isClosed()) {
-                    clientSocket.close();
-                //}
-            } catch (Exception e) {
-                //System.out.println("Client socket was not closed.");
+                clientSocket.close();
+            } catch (Exception ignored) {
             }
         }
 

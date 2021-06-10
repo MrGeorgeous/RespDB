@@ -24,16 +24,10 @@ public class SocketKvsConnection implements KvsConnection {
 
     public SocketKvsConnection(ConnectionConfig config) {
         this.config = config;
-
         try {
-            //if ((this.socket == null) || (!this.socket.isConnected())) {
-                //if (config.getPort() == null) {
-                //    throw new ConnectionException("Empty port in configuration.");
-                //}
-                this.socket = new Socket(config.getHost(), config.getPort());
-                this.writer = new RespWriter(socket.getOutputStream());
-                this.reader = new RespReader(socket.getInputStream());
-            //}
+            this.socket = new Socket(config.getHost(), config.getPort());
+            this.writer = new RespWriter(socket.getOutputStream());
+            this.reader = new RespReader(socket.getInputStream());
         } catch (Exception e) {
             throw new IllegalArgumentException("send: Connection socket could not be opened. ", e);
         }
@@ -52,17 +46,13 @@ public class SocketKvsConnection implements KvsConnection {
         try {
             writer.write(command);
         } catch (IOException e) {
-            throw new ConnectionException("Sending request has failed.", e);
+            throw new ConnectionException("Failed to send request.", e);
         }
 
         try {
-            RespObject r = reader.readObject();
-            System.out.print("RESP_");
-            r.write(System.out);
-            System.out.print("_RESP");
-            return r;
+            return reader.readObject();
         } catch (IOException e) {
-            throw new ConnectionException("Response has been found corrupted.", e);
+            throw new ConnectionException("Failed to get response.", e);
         }
 
     }
@@ -73,16 +63,21 @@ public class SocketKvsConnection implements KvsConnection {
     @Override
     public void close() {
         try {
-            if (socket != null) {
-                socket.close();
-            }
-            if (writer != null) {
-                writer.close();
-            }
             if (reader != null) {
                 reader.close();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
+        try {
+            if (writer != null) {
+                writer.close();
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            socket.close();
+        } catch (Exception ignored) {
+        }
     }
 
 

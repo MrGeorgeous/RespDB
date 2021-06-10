@@ -24,26 +24,20 @@ public class RespReader implements AutoCloseable {
 
     public RespReader(InputStream is) {
         this.stream = new DataInputStream(new BufferedInputStream(is));
-        //this.stream = is;
     }
 
     /**
      * Есть ли следующий массив в стриме?
      */
     public boolean hasArray() throws IOException {
-        //ensureNotEnd();
         if (end()) {
             return false;
         }
-        byte r = getNextByte();
-        return r == RespArray.CODE;
+        return getNextByte() == RespArray.CODE;
     }
 
     public boolean hasObject() {
-        if (end()) {
-            return false;
-        }
-        return true;
+        return !end();
     }
 
     /**
@@ -54,34 +48,24 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespObject readObject() throws IOException {
-
         try {
-
             ensureNotEnd();
             char code = (char)getNextByte();
-
-            if (code == RespCommandId.CODE) {
-                return readCommandId();
+            switch (code) {
+                case RespCommandId.CODE:
+                    return readCommandId();
+                case RespError.CODE:
+                    return readError();
+                case RespBulkString.CODE:
+                    return readBulkString();
+                case RespArray.CODE:
+                    return readArray();
+                default:
+                    throw new IOException("Unknown RespObject was found.");
             }
-
-            if (code == RespError.CODE) {
-               return readError();
-            }
-
-            if (code == RespBulkString.CODE) {
-               return readBulkString();
-            }
-
-            if (code == RespArray.CODE) {
-               return readArray();
-            }
-
         } catch (IOException e) {
             throw new IOException("RespObject was found corrupted while reading from stream.", e);
         }
-
-        throw new IOException("Unknown RespObject was found.");
-
     }
 
     /**
@@ -91,8 +75,7 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespError readError() throws IOException {
-        ensureNotEnd();
-        char code = readCode();
+        validateCode(RespError.CODE);
         return new RespError(readUntilCRLF());
     }
 
@@ -103,8 +86,7 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespBulkString readBulkString() throws IOException {
-        ensureNotEnd();
-        char code = readCode();
+        validateCode(RespBulkString.CODE);
         int len = readIntToCRLF();
         if (len == RespBulkString.NULL_STRING_SIZE) {
             return new RespBulkString(null);
@@ -114,7 +96,6 @@ public class RespReader implements AutoCloseable {
         if (str.length != len) {
             throw new IOException("Corrupted bulk string.");
         }
-        //byte[] str = stream.readNBytes(len);
         return new RespBulkString(str);
     }
 
@@ -125,10 +106,8 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespArray readArray() throws IOException {
-        ensureNotEnd();
-        char code = readCode();
+        validateCode(RespArray.CODE);
         int len = readIntToCRLF();
-        //skipCRLF();
         ArrayList<RespObject> items = new ArrayList<>();
         for (int i = 0; i < len; i++) {
             items.add(readObject());
@@ -143,11 +122,9 @@ public class RespReader implements AutoCloseable {
      * @throws IOException  при ошибке чтения
      */
     public RespCommandId readCommandId() throws IOException {
-        ensureNotEnd();
-        char code = readCode();
-        int commandId = readInt();
+        validateCode(RespCommandId.CODE);
+        int commandId = ByteBuffer.wrap(readNBytes(4)).getInt();
         skipCRLF();
-        //int commandId = ByteBuffer.wrap(stream.readNBytes(4)).getInt();
         return new RespCommandId(commandId);
     }
 
@@ -157,15 +134,11 @@ public class RespReader implements AutoCloseable {
        stream.close();
     }
 
-    private char readCode() throws IOException {
-        return (char)readNextByte();
-//        char r = scanner.next(".").charAt(0);
-//        scanner.useDelimiter("");
-//        return r;
-    }
-
-    private int readInt() throws IOException {
-        return ByteBuffer.wrap(readNBytes(4)).getInt();
+    private void validateCode(byte t) throws IOException {
+        ensureNotEnd();
+        if (readNextByte() != t) {
+            throw new IOException("Unexpected RESP object.");
+        }
     }
 
     private byte[] readNBytes(int N) throws IOException {
@@ -180,14 +153,12 @@ public class RespReader implements AutoCloseable {
         String read = "";
         for (int i = 0; i < CRLF.getBytes().length; i++) {
            read += (char)readNextByte();
-            //System.out.print(scanner.nextByte());
         }
         if (!read.equals(CRLF)) {
             String s = new String(readUntilCRLF());
             if (!s.equals("")) {
                 throw new IOException("Wrong CRLF skip.");
             }
-            //throw new IOException("Wrong CRLF skip.");
         }
     }
 
@@ -210,7 +181,6 @@ public class RespReader implements AutoCloseable {
 
     private int readIntToCRLF() throws IOException {
         return Integer.parseInt(new String(readUntilCRLF()));
-        //return ByteBuffer.wrap(readUntilCRLF()).getInt();
     }
 
     private byte getNextByte() throws IOException {
@@ -240,21 +210,6 @@ public class RespReader implements AutoCloseable {
         }
 
         return b[0];
-
-//        byte r = -1;
-//        try {
-//            r = (byte) stream.read();
-//            //r = stream.readNBytes(1)[0];
-//        } catch (IOException e) {
-//            buffer = -1;
-//            if (!suspendEOF) {
-//                throw new IOException("Stream has been found corrupted.", e);
-//            }
-//        }
-//        if ((r == -1) && !suspendEOF) {
-//            throw new EOFException("End of file reached.");
-//        }
-//        return r;
     }
 
     private boolean end() {
@@ -263,7 +218,6 @@ public class RespReader implements AutoCloseable {
         } catch (Exception e) {
             return true;
         }
-        //return stream.available() == 0;
     }
 
     private void ensureNotEnd() throws EOFException {
@@ -271,9 +225,5 @@ public class RespReader implements AutoCloseable {
             throw new EOFException("Empty InputStream.");
         }
     }
-
-
-
-
 
 }
