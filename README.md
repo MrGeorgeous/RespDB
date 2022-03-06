@@ -2,11 +2,26 @@
 
 This project was conducted during the 'Programming technologies' (2021) university course
 
-The task was to implement given interfaces and methods for Client-Server database application using sockets and Resp-protocol.
+The task was to implement given interfaces and methods for Client-Server key-value storage using sockets and Resp-protocol.
 
 ### Description
 
 Start `JavaSocketServerConnector.java` to launch the server.
+
+Use the following code to access the server:
+
+```java
+try (SocketKvsConnection socketKvsConnection = new SocketKvsConnection(new ConnectionConfig("localhost", 8080))) {
+    SimpleKvsClient client = new SimpleKvsClient("myrestdb", () -> socketKvsConnection);
+    client.createDatabase();
+    client.createTable("users");
+    String ss = client.get("users", "john");
+} catch (Exception e) {
+    e.printStackTrace();
+}
+```
+
+### Project Tree     
 
 ```
 +---basics
