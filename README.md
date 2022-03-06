@@ -1,32 +1,131 @@
 # RespDB
 
-# Лаб №3. RESP-протокол, клиент
-#### Георгий Семенов M32011
-[Последний тест](http://77.234.215.138:28090/job/MrGeorgeous-lab3/12/console)
+This project was conducted during the 'Programming technologies' (2021) university course
 
-# Лаб №2. Инициализация и кэш
-#### Георгий Семенов M32011
-[Последний тест](http://77.234.215.138:28090/job/MrGeorgeous-lab2/34/console)
+The task was to implement given interfaces and methods for Client-Server database application using sockets and Resp-protocol.
 
-# Лаб №1. Логика сохранения и получения значения по ключу
+### Description
 
-#### Георгий Семенов M32011
-[Последний тест](http://77.234.215.138:28090/job/Semenov-lab1/57/console)
+Start `JavaSocketServerConnector.java` to launch the server.
 
-Устройство файловой системы: `workspaceRoot/dbName/tableName/segmentName_timestamp`
+```
++---basics
+|   |   DatabaseServer.java
+|   |
+|   +---config
+|   |       ConfigLoader.java
+|   |       DatabaseConfig.java
+|   |       DatabaseServerConfig.java
+|   |       ServerConfig.java
+|   |
+|   +---connector
+|   |       JavaSocketServerConnector.java
+|   |
+|   +---console
+|   |   |   DatabaseApiSerializable.java
+|   |   |   DatabaseCommand.java
+|   |   |   DatabaseCommandArgPositions.java
+|   |   |   DatabaseCommandResult.java
+|   |   |   DatabaseCommands.java
+|   |   |   ExecutionEnvironment.java
+|   |   |
+|   |   \---impl
+|   |           CreateDatabaseCommand.java
+|   |           CreateTableCommand.java
+|   |           DeleteKeyCommand.java
+|   |           ExecutionEnvironmentImpl.java
+|   |           FailedDatabaseCommandResult.java
+|   |           GetKeyCommand.java
+|   |           SetKeyCommand.java
+|   |           SuccessDatabaseCommandResult.java
+|   |
+|   +---exceptions
+|   |       DatabaseException.java
+|   |
+|   +---index
+|   |   |   KvsIndex.java
+|   |   |   SegmentOffsetInfo.java
+|   |   |
+|   |   \---impl
+|   |           MapBasedKvsIndex.java
+|   |           SegmentIndex.java
+|   |           SegmentOffsetInfoImpl.java
+|   |           TableIndex.java
+|   |
+|   +---initialization
+|   |   |   DatabaseInitializationContext.java
+|   |   |   InitializationContext.java
+|   |   |   Initializer.java
+|   |   |   SegmentInitializationContext.java
+|   |   |   TableInitializationContext.java
+|   |   |
+|   |   \---impl
+|   |           DatabaseInitializationContextImpl.java
+|   |           DatabaseInitializer.java
+|   |           DatabaseServerInitializer.java
+|   |           InitializationContextImpl.java
+|   |           SegmentInitializationContextImpl.java
+|   |           SegmentInitializer.java
+|   |           TableInitializationContextImpl.java
+|   |           TableInitializer.java
+|   |
+|   +---logic
+|   |   |   Database.java
+|   |   |   DatabaseCache.java
+|   |   |   DatabaseFactory.java
+|   |   |   DatabaseRecord.java
+|   |   |   Segment.java
+|   |   |   Table.java
+|   |   |   WritableDatabaseRecord.java
+|   |   |
+|   |   +---impl
+|   |   |       CachingTable.java
+|   |   |       DatabaseCacheImpl.java
+|   |   |       DatabaseImpl.java
+|   |   |       RemoveDatabaseRecord.java
+|   |   |       SegmentImpl.java
+|   |   |       SetDatabaseRecord.java
+|   |   |       TableImpl.java
+|   |   |
+|   |   \---io
+|   |           DatabaseInputStream.java
+|   |           DatabaseOutputStream.java
+|   |
+|   \---resp
+|           CommandReader.java
+|
++---client
+|   +---client
+|   |       KvsClient.java
+|   |       SimpleKvsClient.java
+|   |
+|   +---command
+|   |       CreateDatabaseKvsCommand.java
+|   |       CreateTableKvsCommand.java
+|   |       DeleteKvsCommand.java
+|   |       GetKvsCommand.java
+|   |       KvsCommand.java
+|   |       SetKvsCommand.java
+|   |
+|   +---connection
+|   |       ConnectionConfig.java
+|   |       DirectReferenceKvsConnection.java
+|   |       KvsConnection.java
+|   |       SocketKvsConnection.java
+|   |
+|   \---exception
+|           ConnectionException.java
+|           DatabaseExecutionException.java
+|
+\---protocol
+    |   RespReader.java
+    |   RespWriter.java
+    |
+    \---model
+            RespArray.java
+            RespBulkString.java
+            RespCommandId.java
+            RespError.java
+            RespObject.java
 
-Интерфейс реализации:
-```java
-public class DatabaseImpl implements Database {
-
-    public static Database create(String dbName, Path databaseRoot) throws DatabaseException;
-    public String getName();
-    
-    public void createTableIfNotExists(String tableName) throws DatabaseException;
-    
-    public void write(String tableName, String objectKey, byte[] objectValue) throws DatabaseException;
-    public Optional<byte[]> read(String tableName, String objectKey) throws DatabaseException;
-    public void delete(String tableName, String objectKey) throws DatabaseException;
-    
-}
 ```
