@@ -1,6 +1,6 @@
 # RespDB
 
-This project was conducted during the 'Programming technologies' (2021) university course
+:student: This project was conducted during the 'Programming technologies' (2021) university course
 
 The task was to implement given interfaces and methods for Client-Server key-value storage using sockets and Resp-protocol.
 
